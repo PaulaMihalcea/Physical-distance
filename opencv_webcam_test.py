@@ -1,9 +1,10 @@
 import numpy as np
 import cv2
 
-cap = cv2.VideoCapture(0)  # 0 or -1 For default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
+input = 'output.avi'
+cap = cv2.VideoCapture(input)  # 0 or -1 For default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
 
-save_to = 'output.avi'
+save_to = 'output2.avi'
 fourcc = cv2.VideoWriter_fourcc(*'XVID') # Defines the codec and creates a VideoWriter object
 out = cv2.VideoWriter(save_to, fourcc, 20.0, (640,480))
 
@@ -24,7 +25,11 @@ while True:
 
     out.write(frame)
 
-    cv2.imshow('Webcam', frame)
+    if isinstance(input, int):
+        window_name = 'Webcam'
+    else:
+        window_name = input
+    cv2.imshow(window_name, frame)
     k = cv2.waitKey(33)
     if k == 27:
         break
