@@ -39,6 +39,7 @@ ratio = 1
 ratio = 9.3  # (stone)
 
 b = 100
+
 border = [b, b, b, b]
 
 pts_src = np.array([[214+b, 0+b], [417+b, 0+b], [625+b, 94+b], [0+b, 94+b]])  # Four corners in source image (stone)
