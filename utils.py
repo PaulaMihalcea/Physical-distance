@@ -1,4 +1,5 @@
 import cv2
+import sys
 import numpy as np
 
 
@@ -31,14 +32,18 @@ def get_four_points(im):
             cv2.destroyAllWindows()
             break
         if k == 32:
-            print('SPACER pressed')
-            return
+            cv2.destroyAllWindows()
+            return None, True
+        if k == 27:
+
+            sys.exit()
         else:
             cv2.imshow("Image", data['im'])
             print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['points'])) + '). Press ENTER to continue.')
     
     # Convert array to np.array
     points = np.vstack(data['points']).astype(float)
-    print(type(points))
+
+    print('Warp complete.')
     
-    return points
+    return points, False

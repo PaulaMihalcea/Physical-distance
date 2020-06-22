@@ -12,15 +12,21 @@ def warp(im_src, ratio, show=False):
 
     pts_src = None
 
+    add_borders = False
+
+    ans = input('Would you like to add a border? (Y/N) ')
+
     while pts_src is None:
-
-
         ################# BORDER STUFF BEGINS ###################
-        ans = input('Would you like to add a border? (Y/N) ')
         input_flag = False
+
+
         while input_flag is False:
-            if ans is 'y' or ans is 'Y':
+
+            if ans is 'y' or ans is 'Y' or add_borders:
+                print('')
                 border = [int(input('Insert left border thickness in pixels: ')), int(input('Insert top border thickness in pixels: ')), int(input('Insert right border thickness in pixels: ')), int(input('Insert bottom border thickness in pixels: '))]
+                print('')
                 input_flag = True
                 im_src = cv2.copyMakeBorder(im_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
             elif ans is 'n' or ans is 'N':
@@ -31,11 +37,20 @@ def warp(im_src, ratio, show=False):
         ################# BORDER STUFF ENDS ###################
 
 
-
-        print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left), then press ENTER.')
+        print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
+              'or press SPACEBAR to go back and add or change borders.')
 
         cv2.imshow("Image", im_src)
-        pts_src = get_four_points(im_src)
+
+        pts_src, add_borders = get_four_points(im_src)
+
+
+
+
+
+
+
+
 
     dest_width, dest_height = get_dest_dim(pts_src, ratio)  # Calculate dimensions of destination image
     pts_dst = np.array([[0, 0], [dest_width - 1, 0], [dest_width - 1, dest_height - 1], [0, dest_height - 1]])
@@ -72,8 +87,6 @@ def warp(im_src, ratio, show=False):
 
     cv2.imshow('', im_out)  # Display warped image
     cv2.waitKey(0)
-
-    print('Warp complete.')
 
     return im_out
 
