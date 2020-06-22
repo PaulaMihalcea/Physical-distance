@@ -6,7 +6,7 @@ from get_dest_dim import get_dest_dim
 from screeninfo import get_monitors
 
 
-def warp(im_src, ratio, show=False):
+def warp(im_src, src_type, ratio, show=False):
 
     im_src = cv2.imread(im_src)  # Read source image
 
@@ -39,8 +39,6 @@ def warp(im_src, ratio, show=False):
 
         print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
               'or press SPACEBAR to go back and add or change borders.')
-
-        cv2.imshow("Image", im_src)
 
         pts_src, add_borders = get_four_points(im_src)
 
@@ -92,10 +90,14 @@ def warp(im_src, ratio, show=False):
 
 # TODO Delete tests below:
 
+
 im_src = 'test/test_s_1.jpg'
 im_src = 'test/stone.jpg'
 
 ratio = 1
 ratio = 9.3  # (stone)
 
-warp(im_src, ratio, show=True)
+src_type = 'image'
+
+warp(im_src, src_type, ratio, show=True)
+
