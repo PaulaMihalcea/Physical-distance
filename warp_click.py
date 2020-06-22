@@ -1,7 +1,9 @@
 import cv2
+import sys
 import numpy as np
 from utils import get_four_points
 from get_dest_dim import get_dest_dim
+from screeninfo import get_monitors
 
 
 def warp(im_src, ratio, show=False):
@@ -36,14 +38,24 @@ def warp(im_src, ratio, show=False):
 
     print('old shape', im_out.shape[0], im_out.shape[0])
 
-    if im_out.shape[0] > 1280:  # TODO Guarda se è possibile prendere la risoluzione massima dello schermo
+    ######################## DISPLAY INFO BEGINS ################################
+
+    for m in get_monitors():
+        info = str(m)
+        display = info[info.find('DISPLAY1'):info.find('DISPLAY1')+8].strip()
+
+    if display == 'DISPLAY1':
+        display_width = int(info.split(',')[2].split('=')[1])
+        display_height = int(info.split(',')[3].split('=')[1])
+
+    if im_out.shape[0] > (display_width - 50):
         y = int(im_out.shape[1] / (im_out.shape[0] / 1280))
         im_out = cv2.resize(im_out, (1280, y))
-        print('new shape first if', im_out.shape[0], im_out.shape[0])
-    elif im_out.shape[1] > 720:
+    elif im_out.shape[1] > (display_height - 50):
         x = int(im_out.shape[0] / (im_out.shape[0] / 720))
         im_out = cv2.resize(im_out, (x, 720))
-        print('new shape second if', im_out.shape[0], im_out.shape[0])
+
+    ######################## DISPLAY INFO ENDS ################################
 
     print('new shape final', im_out.shape[0], im_out.shape[0])
 
