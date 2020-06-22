@@ -1,7 +1,7 @@
 import sys
 
 
-def get_dest_dim(pts_src, ratio=1):
+def get_dst_dim(pts_src, ratio=1):
     x = []  # x coordinates of all points
     y = []  # y coordinates of all points
 

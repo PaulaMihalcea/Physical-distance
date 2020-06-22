@@ -6,7 +6,7 @@ def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
 
     # Overlay and source image size check
     if overlay_height > img_dst.shape[0]:  # Check if the overlay height is equal or smaller than the destination image height
-        print('Minimap height exceeds destination image height. Minimap will be scaled to image height.')
+        print('Overlay height exceeds destination image height. Overlay will be scaled to image height.')
         overlay_height = img_dst.shape[0]  # Resize overlay height accordingly
 
     if img_src.shape[0] != overlay_height:  # Check if the height of the image to be overlayed is different from the specified height of the overlay
@@ -17,7 +17,7 @@ def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
     overlay_height = img_src.shape[0]
 
     if overlay_width > img_dst.shape[1]:  # Check if the overlay width is equal or smaller than the destination image width
-        print('Minimap width exceeds destination image width. Minimap will be scaled to image width.')
+        print('Overlay width exceeds destination image width. Overlay will be scaled to image width.')
         overlay_width = img_dst.shape[1]
         dim = (overlay_width, int((overlay_width / img_dst.shape[1]) * img_src.shape[0]))
         img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
@@ -53,7 +53,7 @@ def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
         i += 1
         io += 1
 
-    # Show result (default: False)
+    # Display result (default: False)
     if show:
         cv2.imshow('Image with overlay', img_dst)
         cv2.waitKey(0)

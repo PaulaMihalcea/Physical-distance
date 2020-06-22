@@ -1,22 +1,29 @@
-X sposta la correzione della prospettiva (bird-view) nel warp
+X sposta la correzione della prospettiva (bird-view) nel warp (era in main)
 X prendi risoluzione monitor in automatico
 X aggiungi opzione di ridefinire i bordi
 
-- prendi primo frame del video e chiama warp_click
-- elabora frame rimanenti con warp
+X prendi primo frame del video e chiama warp
+X elabora frame rimanenti con overlay
 
-- controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi
+- controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
 
 
 X dividi warp e generazione minimappa (?)
 - disaccoppia funzioni (in generale)
-- unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
+- unisci/sistema (rinomina) script contenenti funzioni correlate
+X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
+
+- aggiungi barra con testo per warning
+- metti bordo alla barra + minimappa (a seconda del video si distingue male)
+
+- controlla errore nel dimensionamento dell'overlay quando chiamato dal main
+    - dividi generazione minimappa dalla sua applicazione sull'immagine in overlay (generate_overlay/apply_overlay)
+
+- migliora scritte in output (giusto per bellezza)
 
 
 
 
-
-
-
-. la tolleranza nel calcolo delle dimensioni della finestra in warp funziona perfettamente (yay!)
+. per aumentare l'efficienza overlay dovrebbe generare un'immagine e salvarla sul disco una volta calcolate le dimensioni, e aggiungere di volta in volta (con una versione differente) solo i punti dei piedi
+. la tolleranza nel calcolo delle dimensioni della finestra in warp (rispetto allo schermo) funziona perfettamente (yay!)
 . futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere)
