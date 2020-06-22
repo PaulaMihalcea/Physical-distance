@@ -30,11 +30,15 @@ def get_four_points(im):
         if k == 13 and len(data['points']) == 4:  # ENTER
             cv2.destroyAllWindows()
             break
+        if k == 32:
+            print('SPACER pressed')
+            return
         else:
             cv2.imshow("Image", data['im'])
             print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['points'])) + '). Press ENTER to continue.')
     
     # Convert array to np.array
     points = np.vstack(data['points']).astype(float)
+    print(type(points))
     
     return points
