@@ -1,12 +1,16 @@
 import sys
 import cv2
-from warp_click import warp
 
 def read_file(input_video, save=False, fps=20.0, position=0):
 
     cap = cv2.VideoCapture(input_video)  # 0 or -1 For default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
+    overlay = cv2.imread('test/stone.jpg')
+    scale_percent = 30
+    dim = (int(overlay.shape[1] * scale_percent / 100), int(overlay.shape[0] * scale_percent / 100) )
+    overlay = cv2.resize(overlay, dim)
     width = int(cap.get(3))
     height = int(cap.get(4))
+    print(type(overlay))
 
     # Minimap parameters
     color = (255, 0, 0)
@@ -55,7 +59,9 @@ def read_file(input_video, save=False, fps=20.0, position=0):
 
             # Frame processing
             # cv2.putText(frame, f, position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0, 255), 3)  # Frame counter (debug only)
-            cv2.rectangle(frame, start_point, end_point, color, thickness)
+            # cv2.rectangle(frame, start_point, end_point, color, thickness)
+            print('frame:', type(frame))
+            cv2.add(frame, overlay)
 
             if save:
                 out.write(frame)
@@ -84,4 +90,4 @@ def read_file(input_video, save=False, fps=20.0, position=0):
 
 input_video = 'test/test_s.mp4'
 
-read_file(input_video, save=True)
+read_file(input_video)

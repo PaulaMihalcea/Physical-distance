@@ -1,0 +1,22 @@
+X sposta la correzione della prospettiva (bird-view) nel warp
+X prendi risoluzione monitor in automatico
+X aggiungi opzione di ridefinire i bordi
+
+- prendi primo frame del video e chiama warp_click
+- elabora frame rimanenti con warp
+
+- controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi
+
+
+- dividi warp e generazione minimappa (?)
+- disaccoppia funzioni (in generale)
+- unifica nomi variabili (im vs. img, ecc.)
+
+
+
+
+
+
+
+. la tolleranza nel calcolo delle dimensioni della finestra in warp funziona perfettamente (yay!)
+. futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere)

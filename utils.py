@@ -30,7 +30,7 @@ def mouse_handler(event, x, y, flags, data):
         data['points'].append([x, y])  # Append the acquired point to the points array
 
 
-def get_four_points(im):
+def get_points(im):
 
     data = {'im': im.copy(),  # Use a copy of the original image during the points' acquisition
             'points': []}  # Array of points
@@ -46,7 +46,7 @@ def get_four_points(im):
             break
         if k == 32:  # SPACEBAR
             cv2.destroyAllWindows()  # Close the choosing points window and return the necessary flags to begin a new operation
-            return None, True
+            return None
         if k == 27:  # ESC
             print('Exiting program...')
             sys.exit()  # Exit the whole program
@@ -54,6 +54,5 @@ def get_four_points(im):
             print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['points'])) + '). Press ENTER to continue.')
 
     points = np.vstack(data['points']).astype(float)  # Convert points array to a numpy array
-    print('Warp complete.')
     
-    return points, False
+    return points
