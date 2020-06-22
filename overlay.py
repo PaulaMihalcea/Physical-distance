@@ -2,7 +2,7 @@ import cv2
 import sys
 
 
-def overlay(img_src, img_dst, overlay_height, position, show=False):
+def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
 
     # Overlay and source image size check
     if overlay_height > img_dst.shape[0]:  # Check if the overlay height is equal or smaller than the destination image height

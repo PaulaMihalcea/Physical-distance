@@ -8,9 +8,9 @@ X aggiungi opzione di ridefinire i bordi
 - controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi
 
 
-- dividi warp e generazione minimappa (?)
+X dividi warp e generazione minimappa (?)
 - disaccoppia funzioni (in generale)
-- unifica nomi variabili (im vs. img, ecc.)
+- unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 
 
 

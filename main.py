@@ -1,45 +1,19 @@
 import sys
 import cv2
+from overlay import overlay
 
-def read_file(input_video, save=False, fps=20.0, position=0):
+def main(input_video, save=False, fps=20.0, position=0):
 
     cap = cv2.VideoCapture(input_video)  # 0 or -1 For default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
-    overlay = cv2.imread('test/stone.jpg')
-    scale_percent = 30
-    dim = (int(overlay.shape[1] * scale_percent / 100), int(overlay.shape[0] * scale_percent / 100) )
-    overlay = cv2.resize(overlay, dim)
+
     width = int(cap.get(3))
     height = int(cap.get(4))
-    print(type(overlay))
 
     # Minimap parameters
-    color = (255, 0, 0)
-    thickness = -1
-    minimap_width = 80
     minimap_height = 80
 
-    # Minimap position
-    if position == 0:  # Top left
-        start_point = (0, 0)
-        end_point = (minimap_width - 1, minimap_height - 1)
-    elif position == 1:  # Top right
-        start_point = (width - minimap_width, 0)
-        end_point = (width, minimap_height - 1)
-    elif position == 2:  # Bottom right
-        start_point = (width - minimap_width, height - minimap_height)
-        end_point = (width - 1, height - 1)
-    elif position == 3:  # Bottom left
-        start_point = (0, height - minimap_height)
-        end_point = (minimap_width - 1, height - 1)
-    else:
-        print('Invalid position.')
-        sys.exit(-1)
-
-
-
-
     if save:
-        output_video = input_video[::-1].partition('.')[2].partition('/')[0][::-1] + '_output.avi'
+        output_video = input_video[::-1].partition('.')[2].partition('/')[0][::-1] + '_overlay_output.avi'
         fourcc = cv2.VideoWriter_fourcc(*'XVID') # Defines the codec and creates a VideoWriter object
         out = cv2.VideoWriter(output_video, fourcc, fps, (width, height))
 
@@ -60,8 +34,7 @@ def read_file(input_video, save=False, fps=20.0, position=0):
             # Frame processing
             # cv2.putText(frame, f, position, cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0, 255), 3)  # Frame counter (debug only)
             # cv2.rectangle(frame, start_point, end_point, color, thickness)
-            print('frame:', type(frame))
-            cv2.add(frame, overlay)
+            frame = overlay(frame, cv2.imread('test/stone.jpg'))
 
             if save:
                 out.write(frame)
@@ -90,4 +63,4 @@ def read_file(input_video, save=False, fps=20.0, position=0):
 
 input_video = 'test/test_s.mp4'
 
-read_file(input_video)
+main(input_video, save=True)
