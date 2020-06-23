@@ -2,7 +2,7 @@ import cv2
 import sys
 
 
-def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
+def generate_overlay(img_dst, img_src, overlay_position=3, overlay_height=100):
 
     # Overlay and source image size check
     if overlay_height > img_dst.shape[0]:  # Check if the overlay height is equal or smaller than the destination image height
@@ -13,31 +13,40 @@ def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
         dim = (int((overlay_height / img_src.shape[0]) * img_src.shape[1]), overlay_height)
         img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
 
-    overlay_width = img_src.shape[1]
-    overlay_height = img_src.shape[0]
-
-    if overlay_width > img_dst.shape[1]:  # Check if the overlay width is equal or smaller than the destination image width
+    if img_src.shape[1] > img_dst.shape[1]:  # Check if the overlay width is equal or smaller than the destination image width
         print('Overlay width exceeds destination image width. Overlay will be scaled to image width.')
         overlay_width = img_dst.shape[1]
         dim = (overlay_width, int((overlay_width / img_dst.shape[1]) * img_src.shape[0]))
         img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
 
+        overlay_width = img_src.shape[1]
+        overlay_height = img_src.shape[0]
+
     # Overlay position
-    if position == 0:  # Top left
+    if overlay_position == 0:  # Top left
         start_point = (0, 0)
         end_point = (overlay_width, overlay_height)
-    elif position == 1:  # Top right
+    elif overlay_position == 1:  # Top right
         start_point = (img_dst.shape[1] - overlay_width, 0)
         end_point = (img_dst.shape[1], overlay_height)
-    elif position == 2:  # Bottom right
+    elif overlay_position == 2:  # Bottom right
         start_point = (img_dst.shape[1] - overlay_width, img_dst.shape[0] - overlay_height)
         end_point = (img_dst.shape[1], img_dst.shape[0])
-    elif position == 3:  # Bottom left
+    elif overlay_position == 3:  # Bottom left
         start_point = (0, img_dst.shape[0] - overlay_height)
         end_point = (overlay_width, img_dst.shape[0])
     else:
         print('Invalid position.')
         sys.exit(-1)
+
+    return img_src, (overlay_width, overlay_height), start_point, end_point
+
+
+def apply_overlay(img_dst, img_src, overlay_dim, start_point, end_point):
+
+    # Parameters
+    overlay_width = overlay_dim[0]
+    overlay_height = overlay_dim[1]
 
     # Overlay creation
     i = start_point[0]
@@ -52,10 +61,5 @@ def overlay(img_dst, img_src, overlay_height=100, position=2, show=False):
             jo += 1
         i += 1
         io += 1
-
-    # Display result (default: False)
-    if show:
-        cv2.imshow('Image with overlay', img_dst)
-        cv2.waitKey(0)
 
     return img_dst

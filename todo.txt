@@ -16,8 +16,8 @@ X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 - aggiungi barra con testo per warning
 - metti bordo alla barra + minimappa (a seconda del video si distingue male)
 
-- controlla errore nel dimensionamento dell'overlay quando chiamato dal main
-    - dividi generazione minimappa dalla sua applicazione sull'immagine in overlay (generate_overlay/apply_overlay)
+X controlla errore nel dimensionamento dell'overlay quando chiamato dal main
+    X dividi generazione minimappa dalla sua applicazione sull'immagine in overlay (generate_overlay/apply_overlay)
 
 - migliora scritte in output (giusto per bellezza)
 

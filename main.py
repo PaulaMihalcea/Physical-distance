@@ -1,17 +1,57 @@
 import sys
 import cv2
-from overlay import overlay
+from overlay import generate_overlay, apply_overlay
 from warp import warp
 
 
-def process_frame(cap, overlay_src, frame_counter, height, out=None):
+def process_first_frame(cap, overlay_position, overlay_height, out=None):
+    bool, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
+
+    if frame is not None:
+        frame_counter = 1  # Frame counter (debug only)  # TODO
+        img_src = warp(cv2.imread('test/stone.jpg'), 1)  # Generate overlay source image  # TODO warp(frame, 1)
+
+        overlay_data = {'img_src': [],
+                        'overlay_dim': [],
+                        'start_point': [],
+                        'end_point': []}
+
+        overlay_data = generate_overlay(frame, img_src, overlay_position, overlay_height)  # Generate actual overlay
+
+        # Frame overlay
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3])
+        frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
+
+        # Save
+        if save:
+            out.write(frame)
+
+        # Window name
+        if isinstance(src, int):
+            window_name = 'Webcam'
+        else:
+            window_name = src
+
+        # Display result
+        cv2.imshow(window_name, frame)
+        k = cv2.waitKey(33)
+        if k == 27:
+            return False
+
+    else:
+        return False
+
+    return True, overlay_data
+
+
+def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check parameters
     bool, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 
         # Frame overlay
-        frame = overlay(frame, overlay_src, position=overlay_pos)
-        frame = cv2.putText(frame, str(frame_counter), (5, height - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3])
+        frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
         if save:
@@ -71,16 +111,12 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
 
     # First frame processing
-    frame_counter = 2  # Frame counter (debug only)  # TODO
-    bool, frame = cap.read()
-    overlay_src = warp(frame, 1)
+    frame_counter = 1
 
     if save:
-        process = process_frame(cap, overlay_src, frame_counter, height, out)
+        process, overlay_data = process_first_frame(cap, 3, 800, out)
     else:
-        process = process_frame(cap, overlay_src, frame_counter, height)
-
-
+        process, overlay_data = process_first_frame(cap, 3, 80)
 
 
 
@@ -91,9 +127,9 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     while process:
         frame_counter += 1  # Frame counter (debug only)  # TODO
         if save:
-            process = process_frame(cap, overlay_src, frame_counter, height, out)
+            process = process_frame(cap, overlay_data, frame_counter, out)
         else:
-            process = process_frame(cap, overlay_src, frame_counter, height)
+            process = process_frame(cap, overlay_data, frame_counter)
 
     # Final releases
     cap.release()  # Release capture when finished
