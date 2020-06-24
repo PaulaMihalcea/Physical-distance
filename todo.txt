@@ -6,6 +6,7 @@ X prendi primo frame del video e chiama warp
 X elabora frame rimanenti con overlay
 
 - controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
+- aggiungi controlli sull'input dei bordi
 
 
 X dividi warp e generazione minimappa (?)
@@ -20,6 +21,7 @@ X controlla errore nel dimensionamento dell'overlay quando chiamato dal main
     X dividi generazione minimappa dalla sua applicazione sull'immagine in overlay (generate_overlay/apply_overlay)
 
 - migliora scritte in output (giusto per bellezza)
+    - elimina domanda iniziale di border (parti subito col primo frame)
 
 
 

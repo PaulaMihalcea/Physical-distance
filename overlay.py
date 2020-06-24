@@ -4,23 +4,34 @@ import sys
 
 def generate_overlay(img_dst, img_src, overlay_position=3, overlay_height=100):
 
-    # Overlay and source image size check
-    if overlay_height > img_dst.shape[0]:  # Check if the overlay height is equal or smaller than the destination image height
-        print('Overlay height exceeds destination image height. Overlay will be scaled to image height.')
-        overlay_height = img_dst.shape[0]  # Resize overlay height accordingly
+    # Overlay border parameters
+    border_thickness = 1  # Overlay border thickness in pixels
 
+    # Overlay and source image size check
     if img_src.shape[0] != overlay_height:  # Check if the height of the image to be overlayed is different from the specified height of the overlay
         dim = (int((overlay_height / img_src.shape[0]) * img_src.shape[1]), overlay_height)
         img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
 
-    if img_src.shape[1] > img_dst.shape[1]:  # Check if the overlay width is equal or smaller than the destination image width
+    if img_src.shape[1] + border_thickness * 2 > img_dst.shape[1]:  # Check if the overlay width is larger than the destination image width
         print('Overlay width exceeds destination image width. Overlay will be scaled to image width.')
-        overlay_width = img_dst.shape[1]
-        dim = (overlay_width, int((overlay_width / img_dst.shape[1]) * img_src.shape[0]))
-        img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
+        overlay_width = img_dst.shape[1] - border_thickness * 2
+        overlay_height = int(overlay_width / img_src.shape[1] * img_src.shape[0])
+        dim = (overlay_width, overlay_height)
+        img_src = cv2.resize(img_src, dim)   # Resize overlay width accordingly
 
-        overlay_width = img_src.shape[1]
-        overlay_height = img_src.shape[0]
+    if img_src.shape[0] + border_thickness * 2 > img_dst.shape[0]:  # Check if the overlay height is larger than the destination image height
+        print('Overlay height exceeds destination image height. Overlay will be scaled to image height.')
+        overlay_height = img_dst.shape[0] - border_thickness * 2
+        overlay_width = int(overlay_height / img_src.shape[0] * img_src.shape[1])
+        dim = (overlay_width, overlay_height)
+        img_src = cv2.resize(img_src, dim)   # Resize overlay height accordingly
+
+    overlay_width = img_src.shape[1] + border_thickness * 2
+    overlay_height = img_src.shape[0] + border_thickness * 2
+
+    # Overlay border creation
+    img_src = cv2.copyMakeBorder(img_src, border_thickness, 0, border_thickness, 0, cv2.BORDER_CONSTANT, value=(190, 190, 190, 255))  # TODO (0, 0, 255, 255)
+    img_src = cv2.copyMakeBorder(img_src, 0, border_thickness, 0, border_thickness, cv2.BORDER_CONSTANT, value=(64, 64, 64, 255))
 
     # Overlay position
     if overlay_position == 0:  # Top left
@@ -39,7 +50,7 @@ def generate_overlay(img_dst, img_src, overlay_position=3, overlay_height=100):
         print('Invalid position.')
         sys.exit(-1)
 
-    return img_src, (overlay_width, overlay_height), start_point, end_point
+    return img_src, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point
 
 
 def apply_overlay(img_dst, img_src, overlay_dim, start_point, end_point):

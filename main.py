@@ -9,12 +9,12 @@ def process_first_frame(cap, overlay_position, overlay_height, out=None):
 
     if frame is not None:
         frame_counter = 1  # Frame counter (debug only)  # TODO
-        img_src = warp(cv2.imread('test/stone.jpg'), 1)  # Generate overlay source image  # TODO warp(frame, 1)
+        img_src = warp(frame, 1)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
 
-        overlay_data = {'img_src': [],
-                        'overlay_dim': [],
-                        'start_point': [],
-                        'end_point': []}
+        overlay_data = {'img_src': None,
+                        'overlay_dim': None,
+                        'start_point': None,
+                        'end_point': None}
 
         overlay_data = generate_overlay(frame, img_src, overlay_position, overlay_height)  # Generate actual overlay
 
@@ -75,6 +75,13 @@ def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check par
     return True
 
 
+
+
+
+
+
+
+
 def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
     # Load video stream
@@ -113,10 +120,13 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     # First frame processing
     frame_counter = 1
 
+    overlay_position = 3
+    overlay_height = 800
+
     if save:
-        process, overlay_data = process_first_frame(cap, 3, 800, out)
+        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height, out)
     else:
-        process, overlay_data = process_first_frame(cap, 3, 80)
+        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height)
 
 
 
@@ -144,7 +154,7 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 # TODO Delete tests below:
 
 src = 'test/test_s.mp4'
-save = True
+save = False
 overlay_pos = 2
 
 main(src, save, overlay_pos=overlay_pos)
