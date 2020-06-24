@@ -14,13 +14,13 @@ def is_int(n):
         return None
 
 
-def warp(img_src, ratio, show=False):
+def get_click_src(img_src):
 
     # VARIABLES
     pts_src = None  # Source points
     img_src_b = img_src.copy()  # Image with border
 
-    # BORDERS
+    # GET POINTS BY CLICK
     while True:  # Wait for four valid source points
 
         print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
@@ -61,6 +61,33 @@ def warp(img_src, ratio, show=False):
 
             print('')
             img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
+
+    return pts_src
+
+
+def warp(img_src, ratio, show=False):
+
+    while True:
+
+        ans = input('Would you like to load an existing overlay (L),\n'
+                    'create a new one by clicking on the image (M),\n'
+                    'or insert source pixels by hand (N)?\n'
+                    '\n'
+                    '(press the specified key or ESC to exit) ')
+        print('')
+
+        if ans is 'l' or ans is 'L':
+            # TODO Insert load code here
+            pts_src = get_click_src(img_src)  # TODO Delete
+            break
+        elif ans is 'm' or ans is 'M':
+            pts_src = get_click_src(img_src)
+            break
+        elif ans is 'n' or ans is 'N':
+            # TODO Insert get points here
+            pts_src = get_click_src(img_src)  # TODO Delete
+            break
+
 
     # WARP
     dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image

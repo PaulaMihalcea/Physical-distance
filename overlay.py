@@ -87,8 +87,8 @@ def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, 
     img_dst = cv2.line(img_dst, corners[3], corners[2], (64, 64, 64, 255))  # Bottom border
 
     # STATUS BAR TEXT
-    img_dst = cv2.putText(img_dst, status_1[0], (corners[0][0] + 5, corners[0][1] + 19), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_1[1], 1)  # First line
-    img_dst = cv2.putText(img_dst, status_2[0], (corners[0][0] + 5, corners[0][1] + 46), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_2[1], 1)  # Second line
-    img_dst = cv2.putText(img_dst, status_3[0], (corners[0][0] + 5, corners[0][1] + 72), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_3[1], 1)  # Third line
+    img_dst = cv2.putText(img_dst, status_1[0], (corners[0][0] + 5, corners[0][1] + 19), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_1[1], 1)  # First line
+    img_dst = cv2.putText(img_dst, status_2[0], (corners[0][0] + 5, corners[0][1] + 46), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_2[1], 1)  # Second line
+    img_dst = cv2.putText(img_dst, status_3[0], (corners[0][0] + 5, corners[0][1] + 72), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_3[1], 1)  # Third line
 
     return img_dst

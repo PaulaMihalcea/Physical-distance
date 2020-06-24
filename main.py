@@ -88,10 +88,10 @@ def process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3
 def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
     status_1 = ('People detected: 20', (255, 255, 0, 255))
-    status_2 = ('SAFETY DISTANCE', (0, 255, 255, 255))
-    status_3 = ('VIOLATION!', (0, 255, 255, 255))
-    #status_2 = ('SAFETY DISTANCE', (0, 255, 0, 255))
-    #status_3 = ('RESPECTED', (0, 255, 0, 255))
+    status_2 = ('SAFETY DISTANCE', (0, 0, 255, 255))
+    status_3 = ('VIOLATION!', (0, 0, 255, 255))
+    status_2 = ('SAFETY DISTANCE', (0, 255, 0, 255))
+    status_3 = ('RESPECTED', (0, 255, 0, 255))
 
     print('Welcome to the Physical Distance Detector!')
     print('')

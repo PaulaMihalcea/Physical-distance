@@ -9,6 +9,7 @@ X elabora frame rimanenti con overlay
 X aggiungi controlli sull'input dei bordi
 - aggiungi controlli sulle dimensioni della barra di stato
     X aggiungi posizione testo per tutti i casi
+    - ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo
 
 - separa warp dell'immagine dal semplice warp dei punti
 
@@ -18,6 +19,9 @@ X aggiungi controlli sull'input dei bordi
 X dividi warp e generazione minimappa (?)
 - disaccoppia funzioni (in generale)
 - unisci/sistema (rinomina) script contenenti funzioni correlate
+- salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)
+    - aggiungi opzione di specificare manualmente minimappa (per misurazioni precise)
+    - implementa ESC nella scelta del tipo di overlay
 X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 
 X aggiungi barra con testo per warning

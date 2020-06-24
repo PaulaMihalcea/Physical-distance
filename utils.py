@@ -52,6 +52,7 @@ def get_pts(im):
             sys.exit()  # Exit the whole program
         else:  # Any other key
             print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['pts'])) + '). Press ENTER to continue.')
+            print('')
 
     pts = np.vstack(data['pts']).astype(float)  # Convert points array to a numpy array
     
