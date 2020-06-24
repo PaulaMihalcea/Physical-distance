@@ -12,6 +12,7 @@ def process_first_frame(cap, overlay_position, overlay_height, out=None):
         img_src = warp(frame, 1)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
 
         overlay_data = {'img_src': None,
+                        'overlay_position': None,
                         'overlay_dim': None,
                         'start_point': None,
                         'end_point': None}
@@ -19,7 +20,7 @@ def process_first_frame(cap, overlay_position, overlay_height, out=None):
         overlay_data = generate_overlay(frame, img_src, overlay_position, overlay_height)  # Generate actual overlay
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3])
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4])
         frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -50,7 +51,7 @@ def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check par
     if frame is not None:
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3])
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4])
         frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -83,6 +84,9 @@ def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check par
 
 
 def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
+
+    print('Welcome to the Physical Distance Detector!')
+    print('')
 
     # Load video stream
     cap = cv2.VideoCapture(src)  # 0 or -1 For default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
@@ -120,8 +124,8 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     # First frame processing
     frame_counter = 1
 
-    overlay_position = 3
-    overlay_height = 800
+    overlay_position = overlay_pos
+    overlay_height = 80
 
     if save:
         process, overlay_data = process_first_frame(cap, overlay_position, overlay_height, out)
@@ -141,20 +145,23 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
         else:
             process = process_frame(cap, overlay_data, frame_counter)
 
-    # Final releases
+    # FINAL RELEASES
     cap.release()  # Release capture when finished
     if save:
         out.release()
+        print('Video saved as ' + output_video + '.')
+        print('')
     cv2.destroyAllWindows()  # Close window
 
-    return
+    print('Exiting program...')
+    sys.exit()  # Exit the whole program
 
 
 
 # TODO Delete tests below:
 
 src = 'test/test_s.mp4'
-save = False
-overlay_pos = 2
+save = True
+overlay_pos = 1
 
 main(src, save, overlay_pos=overlay_pos)

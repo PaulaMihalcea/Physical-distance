@@ -6,7 +6,10 @@ X prendi primo frame del video e chiama warp
 X elabora frame rimanenti con overlay
 
 - controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
-- aggiungi controlli sull'input dei bordi
+X aggiungi controlli sull'input dei bordi
+- aggiungi controlli sulle dimensioni della barra di stato
+
+- sposta tutti i parametri rilevanti in un file ini
 
 
 X dividi warp e generazione minimappa (?)
@@ -20,12 +23,12 @@ X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 X controlla errore nel dimensionamento dell'overlay quando chiamato dal main
     X dividi generazione minimappa dalla sua applicazione sull'immagine in overlay (generate_overlay/apply_overlay)
 
-- migliora scritte in output (giusto per bellezza)
-    - elimina domanda iniziale di border (parti subito col primo frame)
+X migliora scritte in output (giusto per bellezza)
+    X elimina domanda iniziale di border (parti subito col primo frame)
 
 
 
 
-. per aumentare l'efficienza overlay dovrebbe generare un'immagine e salvarla sul disco una volta calcolate le dimensioni, e aggiungere di volta in volta (con una versione differente) solo i punti dei piedi
-. la tolleranza nel calcolo delle dimensioni della finestra in warp (rispetto allo schermo) funziona perfettamente (yay!)
-. futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere)
+X per aumentare l'efficienza overlay dovrebbe generare un'immagine e salvarla una volta calcolate le dimensioni (quindi generarla una sola volta invece che ogni volta che viene chiamato), e aggiungerla di volta in volta (con una versione differente) solo coi punti dei piedi
+X la tolleranza nel calcolo delle dimensioni della finestra in warp (rispetto allo schermo) funziona perfettamente (yay!)
+X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere) -> va bene DISPLAY1, vanno come DISPLAY1, DISPLAY2, ecc.

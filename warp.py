@@ -1,3 +1,4 @@
+import sys
 import cv2
 import numpy as np
 from get_dst_dim import get_dst_dim
@@ -5,33 +6,25 @@ from screeninfo import get_monitors
 from utils import get_pts
 
 
+def is_int(n):
+    try:
+        n = int(n)
+        return n
+    except ValueError:
+        return None
+
+
 def warp(img_src, ratio, show=False):
 
-    pts_src = []  # Source points
+    # VARIABLES
+    pts_src = None  # Source points
+    img_src_b = img_src.copy()  # Image with border
 
     # BORDERS
-    ans = input('Would you like to add a border? (Y/N) ')  # Ask the user if borders are needed
-
     while True:  # Wait for four valid source points
-        while True:  # Wait for user input
 
-            if ans is 'y' or ans is 'Y' or pts_src is None:  # Borders needed
-                print('')
-                border = [int(input('Insert left border thickness in pixels: ')), int(input('Insert top border thickness in pixels: ')), int(input('Insert right border thickness in pixels: ')), int(input('Insert bottom border thickness in pixels: '))]  # Get border thickness
-                print('')
-                img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
-                break  # Exit input loop
-
-            elif ans is 'n' or ans is 'N':  # No borders needed
-                img_src_b = img_src.copy()
-                break  # Exit input loop
-
-            else:  # Wrong input; keep waiting for input
-                ans = input('Invalid answer. Try again (Y/N): ')
-
-        print('')
         print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
-              'or press SPACEBAR to go back and add or change borders.\n'
+              'or press SPACEBAR to add or change borders.\n'
               'Otherwise, press ESC to exit.')
         print('')
 
@@ -39,6 +32,35 @@ def warp(img_src, ratio, show=False):
 
         if pts_src is not None:  # Exit source points loop if four valid points have been returned
             break
+        else:
+            border = [None] * 4  # Border thickness
+            while True:
+                border[0] = is_int(input('Insert left border thickness in pixels: '))
+                if border[0] is None or border[0] < 0:
+                    print('Invalid input.')
+                else:
+                    break
+            while True:
+                border[1] = is_int(input('Insert top border thickness in pixels: '))
+                if border[1] is None or border[1] < 0:
+                    print('Invalid input.')
+                else:
+                    break
+            while True:
+                border[2] = is_int(input('Insert right border thickness in pixels: '))
+                if border[2] is None or border[2] < 0:
+                    print('Invalid input.')
+                else:
+                    break
+            while True:
+                border[3] = is_int(input('Insert bottom border thickness in pixels: '))
+                if border[3] is None or border[3] < 0:
+                    print('Invalid input.')
+                else:
+                    break
+
+            print('')
+            img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
 
     # WARP
     dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
@@ -72,10 +94,13 @@ def warp(img_src, ratio, show=False):
         x = int(img_dst.shape[0] / (img_dst.shape[0] / img_dst_height))
         img_dst = cv2.resize(img_dst, (x, img_dst_height))
 
-    # Display result (default: False)
+    # DISPLAY RESULT (default: False)
     if show:
         cv2.imshow('', img_dst)  # Display warped image
-        cv2.waitKey(0)
+        k = cv2.waitKey(0)
+        if k == 27:  # ESC
+            print('Exiting program...')
+            sys.exit()  # Exit the whole program
 
     return img_dst
 
