@@ -49,7 +49,7 @@ def get_pts(im):
             return None
         if k == 27:  # ESC
             print('Exiting program...')
-            sys.exit()  # Exit the whole program
+            sys.exit()  # Exit program
         else:  # Any other key
             print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['pts'])) + '). Press ENTER to continue.')
             print('')

@@ -11,17 +11,21 @@ X aggiungi controlli sull'input dei bordi
     X aggiungi posizione testo per tutti i casi
     - ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo
 
-- separa warp dell'immagine dal semplice warp dei punti
-
-- sposta tutti i parametri rilevanti in un file ini
+- implementa segnaposti per la persone
+    - separa warp dell'immagine dal semplice warp dei punti
+    - punti multicolore [...]
+    - aggiusta punti su overlay ridimensionato rispetto alla risoluzione dello schermo
+    - aggiusta coordinate punti in base alla posizione dell'overlay
+    - togli parametri di omografia non necessari in overlay.py
+    - se proprio va rifatto il warp della mappa ad ogni frame, ricalcola anche l'immagine della minimappa riprendendola dal frame (con le coordinate iniziali)
 
 
 X dividi warp e generazione minimappa (?)
 - disaccoppia funzioni (in generale)
 - unisci/sistema (rinomina) script contenenti funzioni correlate
-- salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)
-    - aggiungi opzione di specificare manualmente minimappa (per misurazioni precise)
-    - implementa ESC nella scelta del tipo di overlay
+
+X aggiungi opzione di specificare manualmente minimappa (per misurazioni precise)
+
 X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 
 X aggiungi barra con testo per warning
@@ -35,7 +39,12 @@ X migliora scritte in output (giusto per bellezza)
 
 
 
+Sviluppi futuri/note aggiuntive
 
 X per aumentare l'efficienza overlay dovrebbe generare un'immagine e salvarla una volta calcolate le dimensioni (quindi generarla una sola volta invece che ogni volta che viene chiamato), e aggiungerla di volta in volta (con una versione differente) solo coi punti dei piedi
 X la tolleranza nel calcolo delle dimensioni della finestra in warp (rispetto allo schermo) funziona perfettamente (yay!)
 X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere) -> va bene DISPLAY1, vanno come DISPLAY1, DISPLAY2, ecc.
+
+. salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)
+    -> vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
+. sposta tutti i parametri rilevanti in un file ini (per comodità)

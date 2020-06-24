@@ -115,22 +115,27 @@ def get_man_src():
     return pts_src
 
 
-def warp(img_src, ratio, show=False):
+def warp(img_src, ratio, points=[], show=False, first=False):
 
-    while True:
+    if first:
+        while True:
 
-        ans = input('Would you like to click on the video in order to create an overlay (C),\n'
-                    'or do you prefer to insert source pixels manually (M)?\n'
-                    '\n'
-                    '(press the specified key or ESC to exit) ')
-        print('')
+            ans = input('Would you like to click on the video in order to create an overlay (C),\n'
+                        'or do you prefer to insert source pixels manually (M)? ')
+            print('')
 
-        if ans is 'c' or ans is 'C':
-            pts_src = get_click_src(img_src)
-            break
-        elif ans is 'm' or ans is 'M':
-            pts_src = get_man_src()
-            break
+            if ans is 'c' or ans is 'C':
+                pts_src = get_click_src(img_src)
+                break
+            elif ans is 'm' or ans is 'M':
+                pts_src = get_man_src()
+                break
+            else:
+                print('Invalid answer.')
+
+    # DRAW POINTS
+    for i in range(0, len(points)):
+        img_src = cv2.circle(img_src, (points[i][0], points[i][1]), 3, (0, 255, 0, 255), -1)
 
     # WARP
     dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
@@ -170,7 +175,6 @@ def warp(img_src, ratio, show=False):
         k = cv2.waitKey(0)
         if k == 27:  # ESC
             print('Exiting program...')
-            sys.exit()  # Exit the whole program
+            sys.exit()  # Exit program
 
     return img_dst
-
