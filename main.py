@@ -16,12 +16,13 @@ def process_first_frame(cap, overlay_position, overlay_height, status_1, status_
                         'overlay_position': None,
                         'overlay_dim': None,
                         'start_point': None,
-                        'end_point': None}
+                        'end_point': None,
+                        'corners': None}
 
         overlay_data = generate_overlay(frame, img_src, overlay_position, overlay_height)  # Generate actual overlay
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], status_1, status_2, status_3)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], status_1, status_2, status_3)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -52,7 +53,7 @@ def process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3
     if frame is not None:
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], status_1, status_2, status_3)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], status_1, status_2, status_3)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -87,8 +88,8 @@ def process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3
 def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
     status_1 = ('People detected: 20', (255, 255, 0, 255))
-    status_2 = ('SAFETY DISTANCE', (0, 0, 255, 255))
-    status_3 = ('VIOLATION!', (0, 0, 255, 255))
+    status_2 = ('SAFETY DISTANCE', (0, 255, 255, 255))
+    status_3 = ('VIOLATION!', (0, 255, 255, 255))
     #status_2 = ('SAFETY DISTANCE', (0, 255, 0, 255))
     #status_3 = ('RESPECTED', (0, 255, 0, 255))
 
@@ -169,6 +170,6 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
 src = 'test/test_s.mp4'
 save = True
-overlay_pos = 1
+overlay_pos = 3
 
 main(src, save, overlay_pos=overlay_pos)

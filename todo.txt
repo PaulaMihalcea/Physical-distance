@@ -8,6 +8,9 @@ X elabora frame rimanenti con overlay
 - controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
 X aggiungi controlli sull'input dei bordi
 - aggiungi controlli sulle dimensioni della barra di stato
+    X aggiungi posizione testo per tutti i casi
+
+- separa warp dell'immagine dal semplice warp dei punti
 
 - sposta tutti i parametri rilevanti in un file ini
 
@@ -17,7 +20,7 @@ X dividi warp e generazione minimappa (?)
 - unisci/sistema (rinomina) script contenenti funzioni correlate
 X unifica nomi variabili (im vs. img, ecc.) -> img_src, img_dst
 
-- aggiungi barra con testo per warning
+X aggiungi barra con testo per warning
 X metti bordo alla barra + minimappa (a seconda del video si distingue male)
 
 X controlla errore nel dimensionamento dell'overlay quando chiamato dal main
