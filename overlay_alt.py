@@ -4,9 +4,9 @@ import numpy as np
 from warp import warp
 
 
-def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, status_1='', status_2='', status_3='', first=False):
+def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, pts_src=[], status_1='', status_2='', status_3='', first=False):
 
-    img_src = warp(img_dst, 1, points, first)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
+    img_src, pts_src = warp(img_dst, 1, pts_src, points, first=first)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
 
     # OVERLAY PARAMETERS
     border_thickness = 1  # Overlay border thickness in pixels
@@ -59,9 +59,6 @@ def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, statu
         end_point = (overlay_width, img_dst.shape[0])
         corners.extend([(end_point[0], start_point[1]), (img_dst.shape[1] - 1, start_point[1]), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
 
-    return img_src, overlay_position, start_point, end_point, corners
-
-
 
     ###### ACTUAL OVERLAY DRAWING
 
@@ -95,4 +92,4 @@ def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, statu
     img_dst = cv2.putText(img_dst, status_2[0], (corners[0][0] + 5, corners[0][1] + 46), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_2[1], 1)  # Second line
     img_dst = cv2.putText(img_dst, status_3[0], (corners[0][0] + 5, corners[0][1] + 72), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_3[1], 1)  # Third line
 
-    return img_dst
+    return img_dst, pts_src

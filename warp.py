@@ -115,7 +115,7 @@ def get_man_src():
     return pts_src
 
 
-def warp(img_src, ratio, points=[], show=False, first=False):
+def warp(img_src, ratio, pts_src=[], points=[], show=False, first=False):
 
     if first:
         while True:
@@ -132,6 +132,8 @@ def warp(img_src, ratio, points=[], show=False, first=False):
                 break
             else:
                 print('Invalid answer.')
+    else:
+        pts_src = pts_src
 
     # DRAW POINTS
     for i in range(0, len(points)):
@@ -177,4 +179,4 @@ def warp(img_src, ratio, points=[], show=False, first=False):
             print('Exiting program...')
             sys.exit()  # Exit program
 
-    return img_dst
+    return img_dst, pts_src
