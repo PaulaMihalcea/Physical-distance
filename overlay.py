@@ -53,7 +53,7 @@ def generate_overlay(img_dst, img_src, overlay_position=3, overlay_height=100):
     return img_src, overlay_position, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point
 
 
-def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point):
+def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point, status_1='', status_2='', status_3=''):
 
     # PARAMETERS
     overlay_width = overlay_dim[0]
@@ -86,6 +86,10 @@ def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, 
         img_dst = cv2.line(img_dst, (0, 0), (start_point[0] - 1, 0), (190, 190, 190, 255))  # Top border
         img_dst = cv2.line(img_dst, (start_point[0] - 1, 0), (start_point[0] - 1, end_point[1] - 1), (64, 64, 64, 255))  # Right border
         img_dst = cv2.line(img_dst, (0, end_point[1] - 1), (start_point[0] - 1, end_point[1] - 1), (64, 64, 64, 255))  # Bottom border
+        img_dst = cv2.putText(img_dst, status_1[0], (6, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_1[1], 1)  # Status bar text (first line)
+        img_dst = cv2.putText(img_dst, status_2[0], (6, 47), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_2[1], 1)  # Status bar text (second line)
+        img_dst = cv2.putText(img_dst, status_3[0], (6, 73), cv2.FONT_HERSHEY_SIMPLEX, 0.6, status_3[1], 1)  # Status bar text (third line)
+
     elif overlay_position == 2:  # Bottom right
         img_dst = cv2.rectangle(img_dst, (0, start_point[1]), (start_point[0] - 1, img_dst.shape[0] - 1), (128, 128, 128, 255), -1)  # Rectangle
         img_dst = cv2.line(img_dst, (0, start_point[1]), (0, img_dst.shape[0] - 1), (190, 190, 190, 255))  # Left border

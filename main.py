@@ -4,7 +4,8 @@ from overlay import generate_overlay, apply_overlay
 from warp import warp
 
 
-def process_first_frame(cap, overlay_position, overlay_height, out=None):
+def process_first_frame(cap, overlay_position, overlay_height, status_1, status_2, status_3, out=None):
+
     bool, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
@@ -20,8 +21,8 @@ def process_first_frame(cap, overlay_position, overlay_height, out=None):
         overlay_data = generate_overlay(frame, img_src, overlay_position, overlay_height)  # Generate actual overlay
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4])
-        frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], status_1, status_2, status_3)
+        # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
         if save:
@@ -45,14 +46,14 @@ def process_first_frame(cap, overlay_position, overlay_height, out=None):
     return True, overlay_data
 
 
-def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check parameters
+def process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3, out=None):  # TODO check parameters
     bool, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4])
-        frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], status_1, status_2, status_3)
+        # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
         if save:
@@ -84,6 +85,12 @@ def process_frame(cap, overlay_data, frame_counter, out=None):  # TODO check par
 
 
 def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
+
+    status_1 = ('People detected: 20', (255, 255, 0, 255))
+    status_2 = ('SAFETY DISTANCE', (0, 0, 255, 255))
+    status_3 = ('VIOLATION!', (0, 0, 255, 255))
+    #status_2 = ('SAFETY DISTANCE', (0, 255, 0, 255))
+    #status_3 = ('RESPECTED', (0, 255, 0, 255))
 
     print('Welcome to the Physical Distance Detector!')
     print('')
@@ -128,9 +135,9 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     overlay_height = 80
 
     if save:
-        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height, out)
+        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height, status_1, status_2, status_3, out)
     else:
-        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height)
+        process, overlay_data = process_first_frame(cap, overlay_position, overlay_height, status_1, status_2, status_3)
 
 
 
@@ -141,9 +148,9 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     while process:
         frame_counter += 1  # Frame counter (debug only)  # TODO
         if save:
-            process = process_frame(cap, overlay_data, frame_counter, out)
+            process = process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3, out)
         else:
-            process = process_frame(cap, overlay_data, frame_counter)
+            process = process_frame(cap, overlay_data, frame_counter, status_1, status_2, status_3)
 
     # FINAL RELEASES
     cap.release()  # Release capture when finished
