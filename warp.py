@@ -65,29 +65,72 @@ def get_click_src(img_src):
     return pts_src
 
 
+def get_man_src():
+
+    pts_src = []
+
+    while True:
+        coords = input('Insert TOP LEFT point pixel coordinates separated by a space: ')
+        x, y = coords.split(' ')
+        x = is_int(x)
+        y = is_int(y)
+        if x is None or x < 0 or y is None or y < 0:
+            print('Invalid input.')
+        else:
+            pts_src.append([x, y])
+            break
+    while True:
+        coords = input('Insert TOP RIGHT point pixel coordinates separated by a space: ')
+        x, y = coords.split(' ')
+        x = is_int(x)
+        y = is_int(y)
+        if x is None or x < 0 or y is None or y < 0:
+            print('Invalid input.')
+        else:
+            pts_src.append([x, y])
+            break
+    while True:
+        coords = input('Insert BOTTOM RIGHT point pixel coordinates separated by a space: ')
+        x, y = coords.split(' ')
+        x = is_int(x)
+        y = is_int(y)
+        if x is None or x < 0 or y is None or y < 0:
+            print('Invalid input.')
+        else:
+            pts_src.append([x, y])
+            break
+    while True:
+        coords = input('Insert BOTTOM LEFT point pixel coordinates separated by a space: ')
+        x, y = coords.split(' ')
+        x = is_int(x)
+        y = is_int(y)
+        if x is None or x < 0 or y is None or y < 0:
+            print('Invalid input.')
+        else:
+            pts_src.append([x, y])
+            break
+
+    pts_src = np.vstack(pts_src).astype(float)  # Convert points array to a numpy array
+
+    return pts_src
+
+
 def warp(img_src, ratio, show=False):
 
     while True:
 
-        ans = input('Would you like to load an existing overlay (L),\n'
-                    'create a new one by clicking on the image (M),\n'
-                    'or insert source pixels by hand (N)?\n'
+        ans = input('Would you like to click on the video in order to create an overlay (C),\n'
+                    'or do you prefer to insert source pixels manually (M)?\n'
                     '\n'
                     '(press the specified key or ESC to exit) ')
         print('')
 
-        if ans is 'l' or ans is 'L':
-            # TODO Insert load code here
-            pts_src = get_click_src(img_src)  # TODO Delete
-            break
-        elif ans is 'm' or ans is 'M':
+        if ans is 'c' or ans is 'C':
             pts_src = get_click_src(img_src)
             break
-        elif ans is 'n' or ans is 'N':
-            # TODO Insert get points here
-            pts_src = get_click_src(img_src)  # TODO Delete
+        elif ans is 'm' or ans is 'M':
+            pts_src = get_man_src()
             break
-
 
     # WARP
     dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
