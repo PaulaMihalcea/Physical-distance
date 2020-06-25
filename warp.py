@@ -115,11 +115,10 @@ def get_man_src():
     return pts_src
 
 
-def warp(img_src, ratio, pts_src=[], points=[], show=False, first=False):
+def warp(img_src, ratio, pts_src=None, points=[], show=False):
 
-    if first:
+    if pts_src is None:
         while True:
-
             ans = input('Would you like to click on the video in order to create an overlay (C),\n'
                         'or do you prefer to insert source pixels manually (M)? ')
             print('')
@@ -179,4 +178,4 @@ def warp(img_src, ratio, pts_src=[], points=[], show=False, first=False):
             print('Exiting program...')
             sys.exit()  # Exit program
 
-    return img_dst, pts_src
+    return img_dst

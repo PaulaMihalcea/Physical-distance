@@ -6,7 +6,7 @@ from warp import warp
 
 def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
 
-    img_src, h, dst_dim = warp(img_dst, 1)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
+    img_src = warp(img_dst, 1)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
 
     # OVERLAY PARAMETERS
     border_thickness = 1  # Overlay border thickness in pixels
@@ -59,10 +59,10 @@ def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
         end_point = (overlay_width, img_dst.shape[0])
         corners.extend([(end_point[0], start_point[1]), (img_dst.shape[1] - 1, start_point[1]), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
 
-    return img_src, overlay_position, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point, corners, h, dst_dim
+    return img_src, overlay_position, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point, corners
 
 
-def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point, corners, h, dst_dim, points=None, status_1='', status_2='', status_3=''):
+def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point, corners, points=None, status_1='', status_2='', status_3=''):
 
     # PARAMETERS
     overlay_width = overlay_dim[0]

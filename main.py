@@ -16,14 +16,12 @@ def process_first_frame(cap, overlay_position, overlay_height, points, status_1,
                         'overlay_dim': None,
                         'start_point': None,
                         'end_point': None,
-                        'corners': None,
-                        'h': None,
-                        'dst_dim': None}
+                        'corners': None}
 
         overlay_data = generate_overlay(frame, overlay_position, overlay_height)  # Generate actual overlay
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], overlay_data[6], overlay_data[7], points, status_1, status_2, status_3)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], points, status_1, status_2, status_3)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -54,7 +52,7 @@ def process_frame(cap, overlay_data, frame_counter, points, status_1, status_2, 
     if frame is not None:
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], overlay_data[6], overlay_data[7], points, status_1, status_2, status_3)
+        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], points, status_1, status_2, status_3)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save

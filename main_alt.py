@@ -4,24 +4,22 @@ import numpy as np
 from overlay_alt import apply_overlay
 
 
-def process_frame(cap, frame_counter, overlay_position, overlay_height, points, status_1, status_2, status_3, out=None):
+def process_frame(cap, frame_counter, overlay_position, overlay_height, points, status_1, status_2, status_3, pts_src=None, out=None):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 
-        first = False
-
         # Frame overlay
         if frame_counter == 1:
-            pts_src = []
-            first = True
-        # TODO dà errore quando passa il primo frame perché non trova pts_src
-        frame, pts_src = apply_overlay(frame, points, overlay_position, overlay_height, pts_src, status_1, status_2, status_3, first)
+            pts_src = None
+
+        frame, pts_src = apply_overlay(frame, points, overlay_position, overlay_height, pts_src, status_1=status_1, status_2=status_2, status_3=status_3)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
         if save:
+            print(type(frame))
             out.write(frame)
 
         # Window name
@@ -37,9 +35,11 @@ def process_frame(cap, frame_counter, overlay_position, overlay_height, points, 
             return False
 
     else:
+        print('else falso')
         return False
 
-    return True, frame
+    print('frame:',frame)
+    return True, frame, pts_src
 
 
 
@@ -100,17 +100,17 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     # First frame processing
     frame_counter = 1
     if save:
-        process, frame = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3, out)
+        process, frame, pts_src = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3, out)
     else:
-        process, frame = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3)
-
+        process, frame, pts_src = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3)
 
     while process:
         frame_counter += 1  # Frame counter (debug only)  # TODO
+        print(frame_counter)
         if save:
-            process, frame = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3, out)
+            process, frame, pts_src = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3, pts_src, out)
         else:
-            process, frame = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3)
+            process, frame, pts_src = process_frame(cap, frame_counter, overlay_position, overlay_height, people, status_1, status_2, status_3, pts_src)
 
     # FINAL RELEASES
     cap.release()  # Release capture when finished

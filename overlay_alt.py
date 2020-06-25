@@ -4,9 +4,10 @@ import numpy as np
 from warp import warp
 
 
-def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, pts_src=[], status_1='', status_2='', status_3='', first=False):
+def apply_overlay(img_dst, points, overlay_position=3, overlay_height=100, pts_src=None, status_1='', status_2='', status_3=''):
 
-    img_src, pts_src = warp(img_dst, 1, pts_src, points, first=first)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
+    if pts_src is None:
+        img_src, pts_src = warp(img_dst, 1, pts_src, points)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)
 
     # OVERLAY PARAMETERS
     border_thickness = 1  # Overlay border thickness in pixels
