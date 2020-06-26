@@ -5,6 +5,8 @@ from get_dst_dim import get_dst_dim
 from screeninfo import get_monitors
 from utils import get_pts
 
+from transform_coord import transform_coord
+
 
 def is_int(n):
     try:
@@ -134,15 +136,38 @@ def warp(img_src, ratio, pts_src=None, points=[], show=False):
     else:
         pts_src = pts_src
 
-    # DRAW POINTS
-    for i in range(0, len(points)):
-        img_src = cv2.circle(img_src, (points[i][0], points[i][1]), 3, (0, 255, 0, 255), -1)
-
     # WARP
     dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
     pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
 
     h, status = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
+
+
+
+
+
+    ######################## TODO QUI COMINCIA LA SEZIONE SULLA TRASFORMAZIONE DEI PUNTI ########################
+
+    '''
+    img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
+    img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
+
+    
+    points = transform_coord(np.array([[196, 385], [130, 394], [49, 383]]), h, 1)
+
+    for i in range(0, len(points)):
+        img_dst = cv2.circle(img_dst, (points[i][0], points[i][1]), 3, (0, 0, 255, 255), -1)
+
+    # DISPLAY RESULT (default: False)
+    if show:
+        cv2.imshow('', img_dst)  # Display warped image
+        k = cv2.waitKey(0)
+        if k == 27:  # ESC
+            print('Exiting program...')
+            sys.exit()  # Exit program
+    '''
+
+    ######################## TODO FINISCE LA TRASFORMAZIONE DEI PUNTI ########################
 
     img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
     img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
@@ -178,4 +203,4 @@ def warp(img_src, ratio, pts_src=None, points=[], show=False):
             print('Exiting program...')
             sys.exit()  # Exit program
 
-    return img_dst
+    return img_dst, h
