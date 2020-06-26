@@ -1,14 +1,16 @@
 import cv2
 import sys
 import numpy as np
+import random
 from warp import warp
 
 
 def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
 
-    img_src, h = warp(img_dst, 1)  # Generate overlay source image  # TODO warp(cv2.imread('test/stone.jpg'), 1)  # TODO togli il show=True
-    warp_width = img_src.shape[1]
-    warp_height = img_src.shape[0]
+    # SOURCE IMAGE GENERATION
+    img_src, h = warp(img_dst, 1)  # Generate overlay source image
+    src_width = img_src.shape[1]  # Overlay source original width
+    src_height = img_src.shape[0]  # Overlay source original height
 
     # OVERLAY PARAMETERS
     border_thickness = 1  # Overlay border thickness in pixels
@@ -16,13 +18,14 @@ def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
         print('Invalid overlay position.')
         sys.exit(-1)
 
-    # OVERLAY AND SOURCE IMAGE SIZE CHECK
+    # OVERLAY SIZE CHECK
+    '''
     if img_src.shape[0] != overlay_height:  # Check if the height of the image to be overlayed is different from the specified height of the overlay
         dim = (int((overlay_height / img_src.shape[0]) * img_src.shape[1]), overlay_height)
         img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
 
     if img_src.shape[1] + border_thickness * 2 > img_dst.shape[1]:  # Check if the overlay width is larger than the destination image width
-        print('Overlay width exceeds destination image width. Overlay will be scaled to image width.')
+        print('Overlay width exceeds destination image width. Overlay will be scaled accordingly.')
         overlay_width = img_dst.shape[1] - border_thickness * 2
         overlay_height = int(overlay_width / img_src.shape[1] * img_src.shape[0])
         dim = (overlay_width, overlay_height)
@@ -34,6 +37,28 @@ def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
         overlay_width = int(overlay_height / img_src.shape[0] * img_src.shape[1])
         dim = (overlay_width, overlay_height)
         img_src = cv2.resize(img_src, dim)   # Resize overlay height accordingly
+    '''
+
+    overlay_width = int(overlay_height / (src_width / src_height))
+
+    if img_src.shape[0] + border_thickness * 2 > overlay_height:  # Check if the overlay height is too large
+        new_width = int(overlay_height / img_src.shape[0] * img_src.shape[1])
+        new_height = overlay_height - border_thickness * 2
+        if new_width == 0:
+            new_width = 1
+        elif new_height == 0:
+            new_height = 1
+        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay height accordingly
+
+    if img_src.shape[1] + border_thickness * 2 > overlay_width:  # Check if the overlay width is too large
+        new_width = overlay_width - border_thickness * 2
+        new_height = int(overlay_width / img_src.shape[1] * img_src.shape[0])
+        if new_width == 0:
+            new_width = 1
+        elif new_height == 0:
+            new_height = 1
+        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
+
 
     overlay_width = img_src.shape[1] + border_thickness * 2
     overlay_height = img_src.shape[0] + border_thickness * 2
@@ -61,8 +86,8 @@ def generate_overlay(img_dst, overlay_position=3, overlay_height=100):
         end_point = (overlay_width, img_dst.shape[0])
         corners.extend([(end_point[0], start_point[1]), (img_dst.shape[1] - 1, start_point[1]), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
 
-    width_ratio = warp_width / img_src.shape[1]
-    height_ratio = warp_height / img_src.shape[0]
+    width_ratio = src_width / img_src.shape[1]
+    height_ratio = src_height / img_src.shape[0]
 
     return img_src, overlay_position, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point, corners, h, (width_ratio, height_ratio)
 
@@ -99,9 +124,9 @@ def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, 
     img_dst = cv2.putText(img_dst, status_2[0], (corners[0][0] + 5, corners[0][1] + 46), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_2[1], 1)  # Second line
     img_dst = cv2.putText(img_dst, status_3[0], (corners[0][0] + 5, corners[0][1] + 72), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_3[1], 1)  # Third line
 
-    # POINTS OVERLAY
+    # POINTS
     if points is not None:
         for i in range(0, len(points)):
-            img_dst = cv2.circle(img_dst, (points[i][0], points[i][1]), 3, (0, 0, 255, 255), -1)
+            img_dst = cv2.circle(img_dst, (start_point[0] + points[i][0], start_point[1] + points[i][1]), 3, (random.randint(150, 256), random.randint(150, 256), random.randint(150, 256), 255), -1)
 
     return img_dst

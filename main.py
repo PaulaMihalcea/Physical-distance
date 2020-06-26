@@ -21,7 +21,9 @@ def process_first_frame(cap, overlay_position, overlay_height, points, status_1,
                         'h': None,
                         'warp_overlay_ratio': None}
 
-        overlay_data = generate_overlay(frame, overlay_position, overlay_height)  # Generate actual overlay
+        # print(overlay_data['h'])
+
+        overlay_data = generate_overlay(cv2.imread('test/stone.jpg'), overlay_position, overlay_height)  # Generate actual overlay
 
         points = transform_coord(points, overlay_data[6], overlay_data[7])
 
@@ -139,7 +141,7 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
     frame_counter = 1
 
     overlay_position = overlay_pos
-    overlay_height = 80
+    overlay_height = 300
     people = np.array([[196, 385], [130, 394], [49, 383]])  # s_1 rosso, verde, blu
 
     if save:
@@ -179,6 +181,6 @@ def main(src, save=False, dst_name=None, fps=30.0, overlay_pos=0):
 
 src = 'test/test_s.mp4'
 save = False
-overlay_pos = 1
+overlay_pos = 3
 
 main(src, save, overlay_pos=overlay_pos)

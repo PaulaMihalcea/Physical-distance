@@ -5,19 +5,26 @@ X aggiungi opzione di ridefinire i bordi
 X prendi primo frame del video e chiama warp
 X elabora frame rimanenti con overlay
 
-- controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
+X controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
 X aggiungi controlli sull'input dei bordi
 - aggiungi controlli sulle dimensioni della barra di stato
     X aggiungi posizione testo per tutti i casi
     - ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo
 
-- implementa segnaposti per la persone
-    - separa warp dell'immagine dal semplice warp dei punti
-    - punti multicolore [...]
-    - aggiusta punti su overlay ridimensionato rispetto alla risoluzione dello schermo
-    - aggiusta coordinate punti in base alla posizione dell'overlay
-    - togli parametri di omografia non necessari in overlay.py
-    - se proprio va rifatto il warp della mappa ad ogni frame, ricalcola anche l'immagine della minimappa riprendendola dal frame (con le coordinate iniziali)
+- gestisci ratio del pavimento nei punti
+- rifai ridimensionamento overlay (funziona male)
+    -> mettici un overlay width massimo (così non scazza nemmeno il testo)
+
+X implementa segnaposti per la persone
+    X separa warp dell'immagine dal semplice warp dei punti
+    X punti multicolore [...]
+    X aggiusta punti su overlay ridimensionato rispetto alla risoluzione dello schermo
+    X aggiusta coordinate punti in base alla posizione dell'overlay
+    X togli parametri di omografia non necessari in overlay.py
+    X se proprio va rifatto il warp della mappa ad ogni frame, ricalcola anche l'immagine della minimappa riprendendola dal frame (con le coordinate iniziali)
+        X non ho dovuto rifare il warp tutte le volte (yay!)
+
+- controlla il punto effettivo di start point, end point e corners in overlay (mi sa che qualcuno NON considera i bordi che sono stati aggiunti nel frattempo)
 
 
 X dividi warp e generazione minimappa (?)
@@ -36,6 +43,10 @@ X controlla errore nel dimensionamento dell'overlay quando chiamato dal main
 
 X migliora scritte in output (giusto per bellezza)
     X elimina domanda iniziale di border (parti subito col primo frame)
+
+
+
+
 
 
 

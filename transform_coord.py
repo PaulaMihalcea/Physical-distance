@@ -1,9 +1,8 @@
 import cv2
 import numpy as np
 
-def transform_coord(points, h, warp_overlay_ratio):
 
-    p = []
+def transform_coord(points, h, warp_overlay_ratio):
 
     for i in range(0, len(points)):
         p = cv2.perspectiveTransform(np.array([[[points[i][0], points[i][1]]]], dtype='float32'), h).astype('int')

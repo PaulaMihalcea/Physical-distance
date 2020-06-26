@@ -5,8 +5,6 @@ from get_dst_dim import get_dst_dim
 from screeninfo import get_monitors
 from utils import get_pts
 
-from transform_coord import transform_coord
-
 
 def is_int(n):
     try:
@@ -117,7 +115,7 @@ def get_man_src():
     return pts_src
 
 
-def warp(img_src, ratio, pts_src=None, points=[], show=False):
+def warp(img_src, ratio, pts_src=None, show=False):
 
     if pts_src is None:
         while True:
@@ -142,33 +140,6 @@ def warp(img_src, ratio, pts_src=None, points=[], show=False):
 
     h, status = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
 
-
-
-
-
-    ######################## TODO QUI COMINCIA LA SEZIONE SULLA TRASFORMAZIONE DEI PUNTI ########################
-
-    '''
-    img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
-    img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
-
-    
-    points = transform_coord(np.array([[196, 385], [130, 394], [49, 383]]), h, 1)
-
-    for i in range(0, len(points)):
-        img_dst = cv2.circle(img_dst, (points[i][0], points[i][1]), 3, (0, 0, 255, 255), -1)
-
-    # DISPLAY RESULT (default: False)
-    if show:
-        cv2.imshow('', img_dst)  # Display warped image
-        k = cv2.waitKey(0)
-        if k == 27:  # ESC
-            print('Exiting program...')
-            sys.exit()  # Exit program
-    '''
-
-    ######################## TODO FINISCE LA TRASFORMAZIONE DEI PUNTI ########################
-
     img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
     img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
 
@@ -188,11 +159,11 @@ def warp(img_src, ratio, pts_src=None, points=[], show=False):
     img_dst_width = disp_width - disp_tolerance
     img_dst_height = disp_height - disp_tolerance
 
-    if img_dst.shape[0] > img_dst_width:  # Resize warped image window if its width is larger than the screen width
-        y = int(img_dst.shape[1] / (img_dst.shape[0] / img_dst_width))
+    if img_dst.shape[1] > img_dst_width:  # Resize warped image window if its width is larger than the screen width
+        y = int(img_dst.shape[0] / (img_dst.shape[1] / img_dst_width))
         img_dst = cv2.resize(img_dst, (img_dst_width, y))
-    elif img_dst.shape[1] > img_dst_height:  # Resize warped image window if its height is larger than the screen height
-        x = int(img_dst.shape[0] / (img_dst.shape[0] / img_dst_height))
+    elif img_dst.shape[0] > img_dst_height:  # Resize warped image window if its height is larger than the screen height
+        x = int(img_dst.shape[1] / (img_dst.shape[0] / img_dst_height))
         img_dst = cv2.resize(img_dst, (x, img_dst_height))
 
     # DISPLAY RESULT (default: False)
