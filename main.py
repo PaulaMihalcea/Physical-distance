@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import sys
 from configparser import ConfigParser
-
 from get_people_position import get_people_position
 from process_frame import process_frame_first, process_frame
 
@@ -94,8 +93,9 @@ def main(src, save=None, dst_name=None):
     sys.exit(0)  # Exit program
 
 
+# TODO prova la versione da linea di comando:
 '''
-if __name__ == "__main__":
+if __name__ == '__main__':
     src = sys.argv[0]
     save = sys.argv[1]
     dst_name = sys.argv[2]

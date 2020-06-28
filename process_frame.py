@@ -1,5 +1,4 @@
 import cv2
-
 from utils import get_click_src, get_man_src
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
@@ -25,8 +24,6 @@ def process_frame_first(cap, src, pts_src, people, status, out):
                     break
                 else:
                     print('Invalid answer.')
-        else:
-            pts_src = pts_src  # TODO serve davvero?
 
         overlay_data = generate_overlay(frame, pts_src)  # Generate overlay
 
@@ -58,8 +55,8 @@ def process_frame_first(cap, src, pts_src, people, status, out):
     return True, overlay_data
 
 
-def process_frame(cap, src, overlay_data, people, status, out):  # TODO check parameters
-    bool, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
+def process_frame(cap, src, overlay_data, people, status, out):
+    _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 

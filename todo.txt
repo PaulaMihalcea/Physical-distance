@@ -65,7 +65,7 @@ X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli 
 X salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)  [non ha molto senso in realtà, è più semplice e sicuro ricalcolarla]
     X vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
 X sposta tutti i parametri rilevanti in un file ini (per comodità)
-    -> cambia ordine parametri nelle funzioni process_frame_first, process_frame
+    X cambia ordine parametri nelle funzioni process_frame_first, process_frame
 
 
 

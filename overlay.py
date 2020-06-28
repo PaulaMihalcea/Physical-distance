@@ -14,10 +14,13 @@ def generate_overlay(img_dst, pts_src):
     status_bar_min_height = f.getint('Overlay', 'status_bar_min_height')  # Minimum status bar height
 
     overlay_max_width = img_dst.shape[1] - status_bar_min_width  # Maximum overlay width (status bar dependent)
-    overlay_max_height = int(img_dst.shape[0] / 100 * f.getint('Overlay', 'overlay_max_height'))  # Maximum overlay height (percentage (!) of frame height)  # TODO cambialo nell'ini
+    overlay_max_height = int(img_dst.shape[0] / 100 * f.getint('Overlay', 'overlay_max_height'))  # Maximum overlay height (percentage (!) of frame height)
 
     border_thickness = f.getint('Overlay', 'border_thickness')  # Overlay border thickness in pixels
     overlay_position = f.getint('Overlay', 'overlay_position')  # Overlay position on the video (0: top left; 1: top right; 2: bottom right; 3: bottom left)
+
+    hor_offset = f.getint('Overlay', 'hor_offset')  # Manual horizontal offset (for people representation)
+    ver_offset = f.getint('Overlay', 'ver_offset')  # Manual vertical offset (for people representation)
 
     overlay_colors = {'status_bar_background': tuple(map(int, f.get('Status bar colors', 'status_bar_background').split(', '))),
                       'overlay_left_top_border': tuple(map(int, f.get('Status bar colors', 'overlay_left_top_border').split(', '))),
@@ -54,10 +57,12 @@ def generate_overlay(img_dst, pts_src):
 
     # Overlay background
     if img_src.shape[0] < status_bar_min_height:  # Add empty background to overlay if it's too small with respect to the status bar
+        offset = int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2) - 1
         if (status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 1)) % 2 == 0:
-            img_src = cv2.copyMakeBorder(img_src, int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2), int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2), 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
+            img_src = cv2.copyMakeBorder(img_src, offset + 1, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
         else:
-            img_src = cv2.copyMakeBorder(img_src, int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2) - 1, int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2), 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
+            img_src = cv2.copyMakeBorder(img_src, offset, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
+        ver_offset += int(offset / 2)
 
     # Overlay border creation
     img_src = cv2.copyMakeBorder(img_src, border_thickness, 0, border_thickness, 0, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_left_top_border'])
@@ -95,13 +100,15 @@ def generate_overlay(img_dst, pts_src):
                     'start_end_points': [start_point, end_point],
                     'corners': corners,
                     'h': h,
-                    'width_height_ratio': [width_ratio, height_ratio]
+                    'width_height_ratio': [width_ratio, height_ratio],
+                    'offset': [hor_offset, ver_offset],
+                    'border_thickness': border_thickness
                     }
 
     return overlay_data
 
 
-def apply_overlay(img_dst, overlay_data, people=None, status=[]):
+def apply_overlay(img_dst, overlay_data, people=[], status=[]):
 
     # Parameters
     img_src = overlay_data['img_src']
@@ -111,6 +118,9 @@ def apply_overlay(img_dst, overlay_data, people=None, status=[]):
     start_point = overlay_data['start_end_points'][0]
     end_point = overlay_data['start_end_points'][1]
     corners = overlay_data['corners']
+    hor_offset = overlay_data['offset'][0]
+    ver_offset = overlay_data['offset'][1]
+    border_thickness = overlay_data['border_thickness']
 
     # Overlay image creation
     i = start_point[0]
@@ -139,8 +149,7 @@ def apply_overlay(img_dst, overlay_data, people=None, status=[]):
     img_dst = cv2.putText(img_dst, status[2][0], (corners[0][0] + status[2][2] - 1, corners[0][1] + status[2][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[2][1], 1)  # Third line
 
     # People positions
-    if people is not None:  # TODO prova a sostituire il default con [] (magari non serve l'if e non genera errore se len è zero)
-        for i in range(0, len(people)):
-            img_dst = cv2.circle(img_dst, (start_point[0] + people[i][0], start_point[1] + people[i][1]), 3, (0, 255, 0, 255), -1)
+    for i in range(0, len(people)):
+        img_dst = cv2.circle(img_dst, (start_point[0] + border_thickness + hor_offset + people[i][0], start_point[1] + border_thickness + ver_offset + people[i][1]), 1, (0, 255, 0, 255), -1)
 
     return img_dst
