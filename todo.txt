@@ -7,13 +7,13 @@ X elabora frame rimanenti con overlay
 
 X controlla cosa succede se fai il warp sull'originale oppure sull'immagine con bordi (in termini di correttezza della prospettiva)
 X aggiungi controlli sull'input dei bordi
-- aggiungi controlli sulle dimensioni della barra di stato
+X aggiungi controlli sulle dimensioni della barra di stato
     X aggiungi posizione testo per tutti i casi
-    - ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo
+    X ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo [uno dei formati più piccoli è 256x133, dovrebbe già andare tutto bene così com'è (senza controlli)]
 
 - gestisci ratio del pavimento nei punti
-- rifai ridimensionamento overlay (funziona male)
-    -> mettici un overlay width massimo (così non scazza nemmeno il testo)
+X rifai ridimensionamento overlay (funziona male)
+    X mettici un overlay width massimo (così non scazza nemmeno il testo)
 
 X implementa segnaposti per la persone
     X separa warp dell'immagine dal semplice warp dei punti
@@ -24,10 +24,10 @@ X implementa segnaposti per la persone
     X se proprio va rifatto il warp della mappa ad ogni frame, ricalcola anche l'immagine della minimappa riprendendola dal frame (con le coordinate iniziali)
         X non ho dovuto rifare il warp tutte le volte (yay!)
 
-- controlla il punto effettivo di start point, end point e corners in overlay (mi sa che qualcuno NON considera i bordi che sono stati aggiunti nel frattempo)
+X controlla il punto effettivo di start point, end point e corners in overlay (mi sa che qualcuno NON considera i bordi che sono stati aggiunti nel frattempo)
 
-- aggiungi opzioni di visualizzare o meno l'overlay (con varie combinazioni, tipo solo mappa/testo, ecc.) (da specificare nell'ini)
-- sposta parametri della status bar (colori, posizioni del testo) nel file ini
+
+X sposta parametri della status bar (colori, posizioni del testo) nel file ini
 
 
 X dividi warp e generazione minimappa (?)
@@ -59,8 +59,11 @@ X per aumentare l'efficienza overlay dovrebbe generare un'immagine e salvarla un
 X la tolleranza nel calcolo delle dimensioni della finestra in warp (rispetto allo schermo) funziona perfettamente (yay!)
 X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli (per capire quale monitor scegliere) -> va bene DISPLAY1, vanno come DISPLAY1, DISPLAY2, ecc.
 
-. salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)
-    -> vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
+. aggiungi opzioni di visualizzare o meno l'overlay (con varie combinazioni, tipo solo mappa/testo, ecc.) (da specificare nell'ini)
+. modifica offset testo in modo che sia centrato
+
+X salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)  [non ha molto senso in realtà, è più semplice e sicuro ricalcolarla]
+    X vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
 X sposta tutti i parametri rilevanti in un file ini (per comodità)
     -> cambia ordine parametri nelle funzioni process_frame_first, process_frame
 

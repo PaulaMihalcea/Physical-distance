@@ -1,6 +1,6 @@
 import cv2
 
-from cv2_io_utils import get_click_src, get_man_src
+from utils import get_click_src, get_man_src
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
@@ -63,7 +63,7 @@ def process_frame(cap, src, overlay_data, people, status, out):  # TODO check pa
 
     if frame is not None:
 
-        people = transform_coord(people, overlay_data[6], overlay_data[7])
+        people = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'])
 
         # Frame overlay
         frame = apply_overlay(frame, overlay_data, people, status)
