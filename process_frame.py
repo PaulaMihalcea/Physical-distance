@@ -30,10 +30,10 @@ def process_frame_first(cap, src, pts_src, people, status, out):
 
         overlay_data = generate_overlay(frame, pts_src)  # Generate overlay
 
-        people = transform_coord(people, overlay_data[6], overlay_data[7])
+        people = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'])
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], people, status)
+        frame = apply_overlay(frame, overlay_data, people, status)
         # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
 
         # Save
@@ -66,7 +66,7 @@ def process_frame(cap, src, overlay_data, people, status, out):  # TODO check pa
         people = transform_coord(people, overlay_data[6], overlay_data[7])
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data[0], overlay_data[1], overlay_data[2], overlay_data[3], overlay_data[4], overlay_data[5], people, status)
+        frame = apply_overlay(frame, overlay_data, people, status)
 
         # Save
         if out is not None:

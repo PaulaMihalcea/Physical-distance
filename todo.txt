@@ -27,6 +27,7 @@ X implementa segnaposti per la persone
 - controlla il punto effettivo di start point, end point e corners in overlay (mi sa che qualcuno NON considera i bordi che sono stati aggiunti nel frattempo)
 
 - aggiungi opzioni di visualizzare o meno l'overlay (con varie combinazioni, tipo solo mappa/testo, ecc.) (da specificare nell'ini)
+- sposta parametri della status bar (colori, posizioni del testo) nel file ini
 
 
 X dividi warp e generazione minimappa (?)

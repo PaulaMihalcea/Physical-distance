@@ -27,9 +27,9 @@ def main(src, save=None, dst_name=None):
         save = f.get('System', 'default_save')  # Get the default save setting if it has not been specified in the command line arguments
     max_attempts = f.getint('System', 'max_attempts')  # Maximum video reading attempts before quitting
 
-    status = [(f.get('Status_bar_text', 'status_1'), f.get('Status_bar_text', 'status_1_color')), (f.get('Status_bar_text', 'status_2'), f.get('Status_bar_text', 'status_2_color')), (f.get('Status_bar_text', 'status_3'), f.get('Status_bar_text', 'status_3_color'))]  # Overlay status text
+    status = [(f.get('Status bar text', 'status_1'), f.get('Status bar text', 'status_1_color')), (f.get('Status bar text', 'status_2'), f.get('Status bar text', 'status_2_color')), (f.get('Status bar text', 'status_3'), f.get('Status bar text', 'status_3_color'))]  # Overlay status text
 
-    status_alt = [(f.get('Status_bar_text', 'status_1_alt'), f.get('Status_bar_text', 'status_1_alt_color')), (f.get('Status_bar_text', 'status_2_alt'), f.get('Status_bar_text', 'status_2_alt_color')), (f.get('Status_bar_text', 'status_3_alt'), f.get('Status_bar_text', 'status_3_alt_color'))]  # Overlay alternative status text
+    status_alt = [(f.get('Status bar text', 'status_1_alt'), f.get('Status bar text', 'status_1_alt_color')), (f.get('Status bar text', 'status_2_alt'), f.get('Status bar text', 'status_2_alt_color')), (f.get('Status bar text', 'status_3_alt'), f.get('Status bar text', 'status_3_alt_color'))]  # Overlay alternative status text
 
     # Video stream loading
     print('Welcome to the Physical Distance Detector!')
