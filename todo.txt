@@ -62,3 +62,14 @@ X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli 
     -> vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
 X sposta tutti i parametri rilevanti in un file ini (per comodità)
     -> cambia ordine parametri nelle funzioni process_frame_first, process_frame
+
+
+
+
+
+
+
+floor_corners = 51 373
+                136 373
+                236 473
+                23 477

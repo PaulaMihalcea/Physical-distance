@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import sys
 from configparser import ConfigParser
 
@@ -12,11 +13,19 @@ def main(src, save=None, dst_name=None):
     f = ConfigParser()
     f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
+    floor_corners = f.get('General', 'floor_corners')  # Floor corners setup
+    if floor_corners == 'None':
+        pts_src = None
+    else:
+        pts_src = []
+        floor_corners = floor_corners.split('\n')
+        for i in range(0, len(floor_corners)):
+            pts_src.append([int(floor_corners[i].split(' ')[0]), int(floor_corners[i].split(' ')[1])])
+        pts_src = np.array(pts_src)
+
     if save is None:
         save = f.get('System', 'default_save')  # Get the default save setting if it has not been specified in the command line arguments
     max_attempts = f.getint('System', 'max_attempts')  # Maximum video reading attempts before quitting
-
-    overlay_position = f.getint('General', 'overlay_position')  # Overlay (minimap) position on the video (0: top left; 1: top right; 2: bottom right; 3: bottom left)
 
     status = [(f.get('Status_bar_text', 'status_1'), f.get('Status_bar_text', 'status_1_color')), (f.get('Status_bar_text', 'status_2'), f.get('Status_bar_text', 'status_2_color')), (f.get('Status_bar_text', 'status_3'), f.get('Status_bar_text', 'status_3_color'))]  # Overlay status text
 
@@ -53,7 +62,7 @@ def main(src, save=None, dst_name=None):
 
     # First frame processing
     people = get_people_position()
-    process, overlay_data = process_frame_first(cap, src, overlay_position, people, status, out)
+    process, overlay_data = process_frame_first(cap, src, pts_src, people, status, out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')

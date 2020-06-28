@@ -1,43 +1,32 @@
 import cv2
 import sys
 from warp import warp
+from configparser import ConfigParser
 
 
-def generate_overlay(img_dst, overlay_position=3):
+def generate_overlay(img_dst, pts_src):
 
-    # SOURCE IMAGE GENERATION
-    img_src, h = warp(img_dst, 1)  # Generate overlay source image
-    src_width = img_src.shape[1]  # Overlay source original width
-    src_height = img_src.shape[0]  # Overlay source original height
+    # Setup
+    f = ConfigParser()
+    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
-    # OVERLAY PARAMETERS
-    border_thickness = 1  # Overlay border thickness in pixels
+    overlay_max_width = f.getint('Overlay', 'overlay_max_width')  # Maximum overlay width
+    overlay_max_height = f.getint('Overlay', 'overlay_max_height')  # Maximum overlay height
+
+    border_thickness = f.getint('Overlay', 'border_thickness')  # Overlay border thickness in pixels
+    overlay_position = f.getint('Overlay', 'overlay_position')  # Overlay position on the video (0: top left; 1: top right; 2: bottom right; 3: bottom left)
+
     if overlay_position != 0 and overlay_position != 1 and overlay_position != 2 and overlay_position != 3:  # Check overlay position validity
         print('Invalid overlay position.')
         sys.exit(-1)
 
-    # OVERLAY SIZE CHECK
-    '''
-    if img_src.shape[0] != overlay_height:  # Check if the height of the image to be overlayed is different from the specified height of the overlay
-        dim = (int((overlay_height / img_src.shape[0]) * img_src.shape[1]), overlay_height)
-        img_src = cv2.resize(img_src, dim)  # Resize source image accordingly
+    # Source image generation
+    img_src, h = warp(img_dst, 1, pts_src)  # Generate overlay source image
+    src_width = img_src.shape[1]  # Overlay source original width
+    src_height = img_src.shape[0]  # Overlay source original height
 
-    if img_src.shape[1] + border_thickness * 2 > img_dst.shape[1]:  # Check if the overlay width is larger than the destination image width
-        print('Overlay width exceeds destination image width. Overlay will be scaled accordingly.')
-        overlay_width = img_dst.shape[1] - border_thickness * 2
-        overlay_height = int(overlay_width / img_src.shape[1] * img_src.shape[0])
-        dim = (overlay_width, overlay_height)
-        img_src = cv2.resize(img_src, dim)   # Resize overlay width accordingly
-
-    if img_src.shape[0] + border_thickness * 2 > img_dst.shape[0]:  # Check if the overlay height is larger than the destination image height
-        print('Overlay height exceeds destination image height. Overlay will be scaled to image height.')
-        overlay_height = img_dst.shape[0] - border_thickness * 2
-        overlay_width = int(overlay_height / img_src.shape[0] * img_src.shape[1])
-        dim = (overlay_width, overlay_height)
-        img_src = cv2.resize(img_src, dim)   # Resize overlay height accordingly
-    '''
-
-    overlay_width = 70
+    # Overlay size check
+    overlay_width = overlay_max_width
     overlay_height = int(overlay_width / (src_width / src_height))
     print('overlay width, overlay height:', overlay_width, overlay_height)
     scaled = False
@@ -66,14 +55,16 @@ def generate_overlay(img_dst, overlay_position=3):
 
 
 
+
+
     overlay_width = img_src.shape[1] + border_thickness * 2
     overlay_height = img_src.shape[0] + border_thickness * 2
 
-    # OVERLAY BORDER CREATION
+    # Overlay border creation
     img_src = cv2.copyMakeBorder(img_src, border_thickness, 0, border_thickness, 0, cv2.BORDER_CONSTANT, value=(190, 190, 190, 255))
     img_src = cv2.copyMakeBorder(img_src, 0, border_thickness, 0, border_thickness, cv2.BORDER_CONSTANT, value=(64, 64, 64, 255))
 
-    # OVERLAY POSITION
+    # Overlay position
     corners = []
     if overlay_position == 0:  # Top left
         start_point = [0, 0]
@@ -104,13 +95,13 @@ def generate_overlay(img_dst, overlay_position=3):
     return img_src, overlay_position, (overlay_width + border_thickness * 2, overlay_height + border_thickness * 2), start_point, end_point, corners, h, (width_ratio, height_ratio)
 
 
-def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point, corners, points=None, status=[]):
+def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, end_point, corners, people=None, status=[]):
 
-    # PARAMETERS
+    # Parameters
     overlay_width = overlay_dim[0]
     overlay_height = overlay_dim[1]
 
-    # OVERLAY CREATION: IMAGE
+    # Overlay image creation
     i = start_point[0]
     io = 0
 
@@ -124,21 +115,21 @@ def apply_overlay(img_dst, img_src, overlay_position, overlay_dim, start_point, 
         i += 1
         io += 1
 
-    # STATUS BAR
+    # Status bar background
     img_dst = cv2.rectangle(img_dst, corners[0], corners[2], (128, 128, 128, 255), -1)  # Rectangle
     img_dst = cv2.line(img_dst, corners[0], corners[3], (190, 190, 190, 255))  # Left border
     img_dst = cv2.line(img_dst, corners[0], corners[1], (190, 190, 190, 255))  # Top border
     img_dst = cv2.line(img_dst, corners[1], corners[2], (64, 64, 64, 255))  # Right border
     img_dst = cv2.line(img_dst, corners[3], corners[2], (64, 64, 64, 255))  # Bottom border
 
-    # STATUS BAR TEXT
+    # Status bar text
     img_dst = cv2.putText(img_dst, status[0][0], (corners[0][0] + 4, corners[0][1] + 19), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[0][1], 1)  # First line
     img_dst = cv2.putText(img_dst, status[1][0], (corners[0][0] + 4, corners[0][1] + 46), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[1][1], 1)  # Second line
     img_dst = cv2.putText(img_dst, status[2][0], (corners[0][0] + 4, corners[0][1] + 72), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[2][1], 1)  # Third line
 
-    # POINTS
-    if points is not None:
-        for i in range(0, len(points)):
-            img_dst = cv2.circle(img_dst, (start_point[0] + points[i][0], start_point[1] + points[i][1]), 3, (0, 255, 0, 255), -1)
+    # People positions
+    if people is not None:
+        for i in range(0, len(people)):
+            img_dst = cv2.circle(img_dst, (start_point[0] + people[i][0], start_point[1] + people[i][1]), 3, (0, 255, 0, 255), -1)
 
     return img_dst

@@ -1,16 +1,34 @@
 import cv2
 
+from cv2_io_utils import get_click_src, get_man_src
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
 
-def process_frame_first(cap, src, overlay_position, people, status, out):
+def process_frame_first(cap, src, pts_src, people, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        overlay_data = generate_overlay(frame, overlay_position)  # Generate overlay
+        if pts_src is None:
+            while True:
+                ans = input('Would you like to click on the video in order to create an overlay (C),\n'
+                            'or do you prefer to insert source pixels manually (M)? ')
+                print('')
+
+                if ans is 'c' or ans is 'C':
+                    pts_src = get_click_src(frame)
+                    break
+                elif ans is 'm' or ans is 'M':
+                    pts_src = get_man_src()
+                    break
+                else:
+                    print('Invalid answer.')
+        else:
+            pts_src = pts_src  # TODO serve davvero?
+
+        overlay_data = generate_overlay(frame, pts_src)  # Generate overlay
 
         people = transform_coord(people, overlay_data[6], overlay_data[7])
 
