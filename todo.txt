@@ -26,6 +26,8 @@ X implementa segnaposti per la persone
 
 - controlla il punto effettivo di start point, end point e corners in overlay (mi sa che qualcuno NON considera i bordi che sono stati aggiunti nel frattempo)
 
+- aggiungi opzioni di visualizzare o meno l'overlay (con varie combinazioni, tipo solo mappa/testo, ecc.) (da specificare nell'ini)
+
 
 X dividi warp e generazione minimappa (?)
 - disaccoppia funzioni (in generale)
@@ -58,4 +60,5 @@ X futuri sviluppi potrebbero testare la funzione screeninfo su monitor multipli 
 
 . salva minimappa sul disco; verifica presenza minimappa all'avvio (per evitare di ricalcolarla in caso di malfunzionamento)
     -> vanno salvati anche i punti sorgente del warp, è (relativamente) complicato
-. sposta tutti i parametri rilevanti in un file ini (per comodità)
+X sposta tutti i parametri rilevanti in un file ini (per comodità)
+    -> cambia ordine parametri nelle funzioni process_frame_first, process_frame

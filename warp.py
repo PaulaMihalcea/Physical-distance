@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from get_dst_dim import get_dst_dim
 from screeninfo import get_monitors
-from utils import get_pts
+from cv2_io_utils import get_pts
 
 
 def is_int(n):
