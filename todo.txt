@@ -11,7 +11,7 @@ X aggiungi controlli sulle dimensioni della barra di stato
     X aggiungi posizione testo per tutti i casi
     X ridimensiona frame (aggiungendo padding/bordo) se il video è troppo piccolo [uno dei formati più piccoli è 256x133, dovrebbe già andare tutto bene così com'è (senza controlli)]
 
-- gestisci ratio del pavimento nei punti
+X gestisci ratio del pavimento nei punti
 X rifai ridimensionamento overlay (funziona male)
     X mettici un overlay width massimo (così non scazza nemmeno il testo)
 
@@ -73,7 +73,7 @@ X sposta tutti i parametri rilevanti in un file ini (per comodità)
 
 
 
-floor_corners = 51 373
-                136 373
-                236 473
-                23 477
+pts_src = 30 365
+          232 369
+          232 473
+          20 479

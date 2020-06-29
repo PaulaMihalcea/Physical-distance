@@ -4,7 +4,7 @@ from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
 
-def process_frame_first(cap, src, pts_src, people, status, out):
+def process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
@@ -25,9 +25,9 @@ def process_frame_first(cap, src, pts_src, people, status, out):
                 else:
                     print('Invalid answer.')
 
-        overlay_data = generate_overlay(frame, pts_src)  # Generate overlay
+        overlay_data = generate_overlay(frame, pts_src, pts_dst)  # Generate overlay
 
-        people = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'])
+        people, distances = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_dim)
 
         # Frame overlay
         frame = apply_overlay(frame, overlay_data, people, status)
@@ -55,12 +55,12 @@ def process_frame_first(cap, src, pts_src, people, status, out):
     return True, overlay_data
 
 
-def process_frame(cap, src, overlay_data, people, status, out):
+def process_frame(cap, src, overlay_data, map_dim, people, status, out):
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 
-        people = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'])
+        people, distances = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_dim)
 
         # Frame overlay
         frame = apply_overlay(frame, overlay_data, people, status)

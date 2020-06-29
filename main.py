@@ -15,16 +15,31 @@ def main(src, save=None, dst_name=None):
     f = ConfigParser()
     f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
-    floor_corners = f.get('General', 'floor_corners')  # Floor corners setup
-    if floor_corners == 'None':
+    pts_src_ini = f.get('General', 'pts_src')  # Source points (for warp)
+    if pts_src_ini == 'None':
         pts_src = None
     else:
         pts_src = []
-        floor_corners = floor_corners.split('\n')
-        for i in range(0, len(floor_corners)):
-            pts_src.append([int(floor_corners[i].split(' ')[0]), int(floor_corners[i].split(' ')[1])])
+        pts_src_ini = pts_src_ini.split('\n')
+        for i in range(0, len(pts_src_ini)):
+            pts_src.append([int(pts_src_ini[i].split(' ')[0]), int(pts_src_ini[i].split(' ')[1])])
         pts_src = np.array(pts_src)
-        print('Reference points have been found, starting video processing.')
+        print('Reference points have been found.')
+
+    pts_dst_ini = f.get('General', 'pts_dst')  # Destination points (can be either automatically calculated or manually specified)
+    if pts_dst_ini == 'None':
+        pts_dst = None
+    else:
+        pts_dst = []
+        pts_dst_ini = pts_dst_ini.split('\n')
+        for i in range(0, len(pts_dst_ini)):
+            pts_dst.append([int(pts_dst_ini[i].split(' ')[0]), int(pts_dst_ini[i].split(' ')[1])])
+        pts_dst = np.array(pts_dst)
+        print('Destination points have been found.')
+
+    print('')
+
+    map_dim = [f.getfloat('General', 'map_width'), f.getfloat('General', 'map_height')]  # Real map dimensions
 
     if save is None:
         save = f.get('System', 'default_save')  # Get the default save setting if it has not been specified in the command line arguments
@@ -68,7 +83,7 @@ def main(src, save=None, dst_name=None):
 
     # First frame processing
     people = get_people_position()
-    process, overlay_data = process_frame_first(cap, src, pts_src, people, status, out)
+    process, overlay_data = process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')

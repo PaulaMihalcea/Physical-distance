@@ -4,11 +4,13 @@ from warp import warp
 from configparser import ConfigParser
 
 
-def generate_overlay(img_dst, pts_src):
+def generate_overlay(img_dst, pts_src, pts_dst):
 
     # Setup
     f = ConfigParser()
     f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
+
+    ratio = f.getfloat('General', 'ratio')
 
     status_bar_min_width = f.getint('Overlay', 'status_bar_min_width')  # Minimum status bar width
     status_bar_min_height = f.getint('Overlay', 'status_bar_min_height')  # Minimum status bar height
@@ -32,7 +34,7 @@ def generate_overlay(img_dst, pts_src):
         sys.exit(-1)
 
     # Source image generation
-    img_src, h = warp(img_dst, 1, pts_src)  # Generate overlay source image
+    img_src, h = warp(img_dst, ratio, pts_src, pts_dst)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 
@@ -144,7 +146,7 @@ def apply_overlay(img_dst, overlay_data, people=[], status=[]):
     img_dst = cv2.line(img_dst, corners[3], corners[2], overlay_colors['overlay_right_bottom_border'])  # Bottom border
 
     # Status bar text
-    img_dst = cv2.putText(img_dst, status[0][0], (corners[0][0] + status[0][2] - 1, corners[0][1] + status[0][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[0][1], 1)  # First line
+    img_dst = cv2.putText(img_dst, status[0][0] + ' ' + str(len(people)), (corners[0][0] + status[0][2] - 1, corners[0][1] + status[0][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[0][1], 1)  # First line
     img_dst = cv2.putText(img_dst, status[1][0], (corners[0][0] + status[1][2] - 1, corners[0][1] + status[1][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[1][1], 1)  # Second line
     img_dst = cv2.putText(img_dst, status[2][0], (corners[0][0] + status[2][2] - 1, corners[0][1] + status[2][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[2][1], 1)  # Third line
 

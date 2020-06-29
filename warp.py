@@ -5,18 +5,23 @@ from get_dst_dim import get_dst_dim
 from screeninfo import get_monitors
 
 
-def warp(img_src, ratio, pts_src, show=False):
+def warp(img_src, ratio, pts_src, pts_dst, show=False):
 
-    # WARP
-    dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
-    pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+    # Warp
+    if pts_dst is None:
+        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
+        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+    else:
+        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
+        dst_width += 1
+        dst_height += 1
 
     h, status = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
 
     img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
     img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
 
-    # DISPLAY RESOLUTION
+    # Display resolution check
     disp = []  # Monitor info list
 
     for m in get_monitors():  # Cycle on monitors found by the screeninfo library
@@ -39,7 +44,7 @@ def warp(img_src, ratio, pts_src, show=False):
         x = int(img_dst.shape[1] / (img_dst.shape[0] / img_dst_height))
         img_dst = cv2.resize(img_dst, (x, img_dst_height))
 
-    # DISPLAY RESULT (default: False)
+    # Show warped image (default: False)
     if show:
         cv2.imshow('', img_dst)  # Display warped image
         k = cv2.waitKey(0)
