@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def get_distance(points, map_dim):
 
     distances = np.zeros((len(points), len(points)))
