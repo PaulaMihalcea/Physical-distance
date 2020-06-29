@@ -125,7 +125,7 @@ if __name__ == '__main__':
 # TODO Delete tests below:
 
 src = 'test/test_s.mp4'
-save = False
+save = True
 
 main(src, save)
 
