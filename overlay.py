@@ -97,7 +97,7 @@ def generate_overlay(img_dst, pts_src, pts_dst):
 
     overlay_data = {'img_src': img_src,
                     'overlay_position': overlay_position,
-                    'overlay_dim': [overlay_width + border_thickness * 2, overlay_height + border_thickness * 2],
+                    'overlay_dim': [overlay_width, overlay_height],
                     'overlay_colors': overlay_colors,
                     'start_end_points': [start_point, end_point],
                     'corners': corners,
@@ -114,15 +114,15 @@ def apply_overlay(img_dst, overlay_data, people=[], status=[]):
 
     # Parameters
     img_src = overlay_data['img_src']
-    overlay_width = overlay_data['overlay_dim'][0]
-    overlay_height = overlay_data['overlay_dim'][1]
+    border_thickness = overlay_data['border_thickness']
+    overlay_width = overlay_data['overlay_dim'][0] + border_thickness * 2
+    overlay_height = overlay_data['overlay_dim'][1] + border_thickness * 2
     overlay_colors = overlay_data['overlay_colors']
     start_point = overlay_data['start_end_points'][0]
     end_point = overlay_data['start_end_points'][1]
     corners = overlay_data['corners']
     hor_offset = overlay_data['offset'][0]
     ver_offset = overlay_data['offset'][1]
-    border_thickness = overlay_data['border_thickness']
 
     # Overlay image creation
     i = start_point[0]
@@ -150,8 +150,16 @@ def apply_overlay(img_dst, overlay_data, people=[], status=[]):
     img_dst = cv2.putText(img_dst, status[1][0], (corners[0][0] + status[1][2] - 1, corners[0][1] + status[1][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[1][1], 1)  # Second line
     img_dst = cv2.putText(img_dst, status[2][0], (corners[0][0] + status[2][2] - 1, corners[0][1] + status[2][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[2][1], 1)  # Third line
 
-    # People positions
-    for i in range(0, len(people)):
-        img_dst = cv2.circle(img_dst, (start_point[0] + border_thickness + hor_offset + people[i][0], start_point[1] + border_thickness + ver_offset + people[i][1]), 1, (0, 255, 0, 255), -1)
+    # People positions (single color version)
+    for k in range(0, len(people[0])):
+        img_dst = cv2.circle(img_dst, (start_point[0] + border_thickness + hor_offset + people[0][k][0], start_point[1] + border_thickness + ver_offset + people[0][k][1]), 1, (0, 255, 255, 255), -1)
+
+    # People positions (multi color version)
+    v = people[1]  # People that do not respect minimum distance
+    for k in range(0, len(people[0])):
+        img_dst = cv2.circle(img_dst, (start_point[0] + border_thickness + hor_offset + people[0][k][0], start_point[1] + border_thickness + ver_offset + people[0][k][1]), 1, (0, 255, 0, 255), -1)
+        for l in range(0, len(v)):
+            if l == k:
+                img_dst = cv2.circle(img_dst, (start_point[0] + border_thickness + hor_offset + people[0][k][0], start_point[1] + border_thickness + ver_offset + people[0][k][1]), 1, (0, 0, 255, 255), -1)
 
     return img_dst

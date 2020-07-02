@@ -1,10 +1,11 @@
 import cv2
+import numpy as np
 from utils import get_click_src, get_man_src
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
 
-def process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out):
+def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, people, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
@@ -27,11 +28,15 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out
 
         overlay_data = generate_overlay(frame, pts_src, pts_dst)  # Generate overlay
 
-        people, distances = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_dim)
+        map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
+
+        people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data, people, status)
-        # frame = cv2.putText(frame, str(frame_counter), (5, int(cap.get(4)) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 3)  # Frame counter overlay (debug only)
+        if len(v) > 0:
+            frame = apply_overlay(frame, overlay_data, [people, v], status[1])
+        else:
+            frame = apply_overlay(frame, overlay_data, [people, v], status[0])
 
         # Save
         if out is not None:
@@ -52,18 +57,21 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out
     else:
         return False
 
-    return True, overlay_data
+    return True, overlay_data, map_ratio
 
 
-def process_frame(cap, src, overlay_data, map_dim, people, status, out):
+def process_frame(cap, src, overlay_data, map_ratio, min_distance, people, status, out):
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
 
-        people, distances = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_dim)
+        people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
-        frame = apply_overlay(frame, overlay_data, people, status)
+        if len(v) > 0:
+            frame = apply_overlay(frame, overlay_data, [people, v], status[1])
+        else:
+            frame = apply_overlay(frame, overlay_data, [people, v], status[0])
 
         # Save
         if out is not None:

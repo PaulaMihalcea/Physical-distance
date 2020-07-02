@@ -39,7 +39,8 @@ def main(src, save=None, dst_name=None):
 
     print('')
 
-    map_dim = [f.getfloat('General', 'map_width'), f.getfloat('General', 'map_height')]  # Real map dimensions
+    map_dim = [f.getfloat('General', 'map_width') * 100, f.getfloat('General', 'map_height') * 100]  # Real map dimensions
+    min_distance = f.getfloat('General', 'min_distance') * 100
 
     if save is None:
         save = f.get('System', 'default_save')  # Get the default save setting if it has not been specified in the command line arguments
@@ -83,7 +84,7 @@ def main(src, save=None, dst_name=None):
 
     # First frame processing
     people = get_people_position()
-    process, overlay_data = process_frame_first(cap, src, pts_src, pts_dst, map_dim, people, status, out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, people, [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -92,7 +93,7 @@ def main(src, save=None, dst_name=None):
     # Video processing
     while process:
         people = get_people_position()
-        process = process_frame(cap, src, overlay_data, people, status, out)
+        process = process_frame(cap, src, overlay_data, map_ratio, min_distance, people, [status, status_alt], out)
 
     # Final operations
     cap.release()  # Release capture when finished
