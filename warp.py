@@ -26,12 +26,21 @@ def warp(img_src, ratio, pts_src, pts_dst, show=False):
 
     for m in get_monitors():  # Cycle on monitors found by the screeninfo library
         info = str(m)
-        disp.append(info[info.find('DISPLAY1'):info.find('DISPLAY1')+8].strip())  # Get monitor name
+        disp_w = int(info[info.find('width='):info.find(', h')][6:])
+        disp_h = int(info[info.find('height='):info.find(', width_mm=')][7:])
+        name = info[info.find('name='):info.find(')')][5:].replace('\'', '')  # Get monitor name
+        disp.append((disp_w, disp_h, name))
 
     for i in range(0, len(disp)):  # Get width and height of main monitor; it is assumed to be the first that appears in the list
-        if disp[i] == 'DISPLAY1':
-            disp_width = int(info.split(',')[2].split('=')[1])
-            disp_height = int(info.split(',')[3].split('=')[1])
+        if disp[i][2] == 'DISPLAY1':
+            j = i
+        elif disp[i][2] == 'DVI-D-0':
+            j = i
+        elif disp[i][2] == 'HDMI-0':
+            j = i
+
+    disp_width = disp[j][0]
+    disp_height = disp[j][1]
 
     disp_tolerance = 50  # If the warped image is too large, an amount of pixels equal to this number will be left around the image window, so as to avoid occupying the whole screen
     img_dst_width = disp_width - disp_tolerance
