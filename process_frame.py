@@ -71,7 +71,7 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, statu
         people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
-        if len(v) > 0:
+        if v is not None and len(v) > 0:
             frame = apply_overlay(frame, overlay_data, [people, v], status[1])
         else:
             frame = apply_overlay(frame, overlay_data, [people, v], status[0])
@@ -108,14 +108,13 @@ def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
         datum.cvInputData = frame
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
-        print(datum.poseKeypoints.shape)
 
         people = get_people_position(datum.poseKeypoints)
 
         people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
-        if len(v) > 0:
+        if v is not None and len(v) > 0:
             frame = apply_overlay(frame, overlay_data, [people, v], status[1])
         else:
             frame = apply_overlay(frame, overlay_data, [people, v], status[0])

@@ -19,7 +19,7 @@ def get_distance(points, map_ratio, min_distance):
         for j in range(i + 1, len(distances)):
             if distances[i][j] < min_distance:
                 v.append([i, j])
-
-    v = set(map(int, str(v).replace('[', ''). replace(']', '').split(', ')))
+    if v:
+        v = set(map(int, str(v).replace('[', ''). replace(']', '').split(', ')))
 
     return v
