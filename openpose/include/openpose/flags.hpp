@@ -214,7 +214,7 @@ DEFINE_double(hand_alpha_heatmap,       0.7,            "Analogous to `alpha_hea
 #ifndef OPENPOSE_FLAGS_DISABLE_DISPLAY
 // Display
 DEFINE_bool(fullscreen,                 false,          "Run in full-screen mode (press f during runtime to toggle).");
-DEFINE_bool(no_gui_verbose,             true,          "Do not write text on output images on GUI (e.g., number of current frame and people). It"
+DEFINE_bool(no_gui_verbose,             false,          "Do not write text on output images on GUI (e.g., number of current frame and people). It"
                                                         " does not affect the pose rendering.");
 DEFINE_int32(display,                   -1,             "Display mode: -1 for automatic selection; 0 for no display (useful if there is no X server"
                                                         " and/or to slightly speed up the processing if visual output is not required); 2 for 2-D"

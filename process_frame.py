@@ -6,6 +6,7 @@ from get_people_position import get_people_position
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
+
 # OpenPose initialization
 
 # Requires OpenCV installed for Python
@@ -24,6 +25,7 @@ try:
     # Parameters
     params = dict()
     params['model_folder'] = dir_path + '/openpose/models'
+    params['logging_level'] = 255
 
     # Starting OpenPose
     opWrapper = op.WrapperPython()

@@ -7,6 +7,7 @@ from process_frame import process_frame_first, process_frame
 
 def main(src, save=None, dst_name=None):
 
+    print('')
     print('Welcome to the Physical Distance Detector!')
     print('')
 
@@ -124,7 +125,7 @@ if __name__ == '__main__':
 
 src = 'test/test_s.mp4'
 #src = 'openpose/examples/media/video.avi'
-save = True
+save = False
 
 main(src, save)
 
