@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import sys
 from configparser import ConfigParser
-from get_people_position import get_people_position
 from process_frame import process_frame_first, process_frame
 
 
@@ -83,8 +82,7 @@ def main(src, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    people = get_people_position()
-    process, overlay_data, map_ratio = process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, people, [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -92,8 +90,7 @@ def main(src, save=None, dst_name=None):
 
     # Video processing
     while process:
-        people = get_people_position()
-        process = process_frame(cap, src, overlay_data, map_ratio, min_distance, people, [status, status_alt], out)
+        process = process_frame(cap, src, overlay_data, map_ratio, min_distance, [status, status_alt], out)
 
     # Final operations
     cap.release()  # Release capture when finished
@@ -126,7 +123,7 @@ if __name__ == '__main__':
 # TODO Delete tests below:
 
 src = 'test/test_s.mp4'
-save = True
+save = False
 
 main(src, save)
 

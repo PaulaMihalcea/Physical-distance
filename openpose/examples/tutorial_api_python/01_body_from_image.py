@@ -19,26 +19,21 @@ try:
         else:
             # Change these variables to point to the correct folder (Release/x64 etc.)
             sys.path.append('../../python');
-            sys.path.append('/home/zelethil/Physical-distance/openpose/build/python/openpose')
-            sys.path.append('/home/zelethil/Physical-distance/openpose/build/python')
-            sys.path.append('/home/zelethil/Physical-distance/openpose/python/openpose')
-            sys.path.append('/home/zelethil/Physical-distance/openpose/python')
-            print(sys.path)
             # If you run `make install` (default path is `/usr/local/python` for Ubuntu), you can also access the OpenPose/python module from there. This will install OpenPose and the python library at your desired installation path. Ensure that this is in your python path in order to use it.
-            sys.path.append('/usr/local/python')
-            import pyopenpose as op
+            # sys.path.append('/usr/local/python')
+            from openpose import pyopenpose as op
     except ImportError as e:
         print('Error: OpenPose library could not be found. Did you enable `BUILD_PYTHON` in CMake and have this Python script in the right folder?')
         raise e
 
     # Flags
     parser = argparse.ArgumentParser()
-    parser.add_argument("--image_path", default="/home/zelethil/Physical-distance/openpose/examples/media/COCO_val2014_000000000192.jpg", help="Process an image. Read all standard formats (jpg, png, bmp, etc.).")
+    parser.add_argument("--image_path", default="../../../examples/media/COCO_val2014_000000000192.jpg", help="Process an image. Read all standard formats (jpg, png, bmp, etc.).")
     args = parser.parse_known_args()
 
     # Custom Params (refer to include/openpose/flags.hpp for more parameters)
     params = dict()
-    params["model_folder"] = "/home/zelethil/Physical-distance/openpose/models"
+    params["model_folder"] = "../../../models/"
 
     # Add others in path?
     for i in range(0, len(args[1])):
@@ -64,7 +59,6 @@ try:
     # Process Image
     datum = op.Datum()
     imageToProcess = cv2.imread(args[0].image_path)
-    print(args[0])
     datum.cvInputData = imageToProcess
     opWrapper.emplaceAndPop([datum])
 

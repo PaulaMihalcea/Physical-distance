@@ -1,11 +1,41 @@
+import os
 import cv2
-import numpy as np
+import sys
 from utils import get_click_src, get_man_src
+from get_people_position import get_people_position
 from overlay import generate_overlay, apply_overlay
 from transform_coord import transform_coord
 
+# OpenPose initialization
 
-def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, people, status, out):
+# Requires OpenCV installed for Python
+# Import for Ubuntu/OSX
+
+try:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    try:
+        sys.path.append(dir_path + '/openpose/build/python/openpose')
+        import pyopenpose as op
+    except ImportError as e:
+        print('Error: OpenPose library could not be found.')
+        raise e
+
+    # Parameters
+    params = dict()
+    params['model_folder'] = dir_path + '/openpose/models'
+
+    # Starting OpenPose
+    opWrapper = op.WrapperPython()
+    opWrapper.configure(params)
+    opWrapper.start()
+
+except Exception as e:
+    print(e)
+    sys.exit(-1)
+
+
+def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
@@ -29,6 +59,14 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, peopl
         overlay_data = generate_overlay(frame, pts_src, pts_dst)  # Generate overlay
 
         map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
+
+        # OpenPose image processing
+        datum = op.Datum()
+        datum.cvInputData = frame
+        opWrapper.emplaceAndPop([datum])
+        frame = datum.cvOutputData
+
+        people = get_people_position(datum.poseKeypoints)
 
         people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
@@ -60,10 +98,19 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, peopl
     return True, overlay_data, map_ratio
 
 
-def process_frame(cap, src, overlay_data, map_ratio, min_distance, people, status, out):
+def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
+
+        # OpenPose image processing
+        datum = op.Datum()
+        datum.cvInputData = frame
+        opWrapper.emplaceAndPop([datum])
+        frame = datum.cvOutputData
+        print(datum.poseKeypoints.shape)
+
+        people = get_people_position(datum.poseKeypoints)
 
         people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 

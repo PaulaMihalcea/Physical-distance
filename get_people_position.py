@@ -1,8 +1,18 @@
 import numpy as np
 
 
-def get_people_position():
+def get_people_position(op_keypoints):
 
-    points = np.array([[196, 385], [130, 394], [49, 383]])  # s_1 rosso, verde, blu  # TODO
+    if op_keypoints.shape:
+
+        points = np.zeros((op_keypoints.shape[2], 2))
+
+        for i in range(0, op_keypoints.shape[2]):
+            points[i][0] = int((op_keypoints[i][21][0] + op_keypoints[i][24][0]) / 2)
+            points[i][1] = int((op_keypoints[i][21][1] + op_keypoints[i][24][1]) / 2)
+    else:
+        points = []
+
+    print(points)
 
     return points
