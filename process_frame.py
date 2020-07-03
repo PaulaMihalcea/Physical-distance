@@ -2,9 +2,8 @@ import os
 import cv2
 import sys
 from utils import get_click_src, get_man_src
-from get_people_position import get_people_position
 from overlay import generate_overlay, apply_overlay
-from transform_coord import transform_coord
+from transform_coords import transform_coords
 
 
 # OpenPose initialization
@@ -68,9 +67,9 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, statu
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people = get_people_position(datum.poseKeypoints)
+        #people = get_people_position(datum.poseKeypoints)
 
-        people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
+        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
         if v is not None and len(v) > 0:
@@ -111,9 +110,9 @@ def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people = get_people_position(datum.poseKeypoints)
+        #people = get_people_position(datum.poseKeypoints)
 
-        people, v = transform_coord(people, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
+        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 
         # Frame overlay
         if v is not None and len(v) > 0:

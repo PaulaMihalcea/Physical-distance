@@ -124,8 +124,8 @@ if __name__ == '__main__':
 # TODO Delete tests below:
 
 src = 'test/test_s.mp4'
-#src = 'openpose/examples/media/video.avi'
-save = False
+# src = 'openpose/examples/media/video.avi'
+save = True
 
 main(src, save)
 
