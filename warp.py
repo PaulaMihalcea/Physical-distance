@@ -1,25 +1,27 @@
 import sys
 import cv2
 import numpy as np
-from get_dst_dim import get_dst_dim
 from screeninfo import get_monitors
+from translate_homography import translate_homography
 
 
-def warp(img_src, ratio, pts_src, pts_dst, show=False):
+def warp(img_src, ratio, pts_src, pts_dst, dst_dim, show=False):
 
     # Warp
-    if pts_dst is None:
-        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
-        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-    else:
-        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
-        dst_width += 1
-        dst_height += 1
+    dst_width = dst_dim[0]  # TODO rimuovi (anche dalla signature)
+    dst_height = dst_dim[1]  # TODO rimuovi (anche dalla signature)
 
-    h, status = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
+    h, _ = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
 
-    img_dst = np.zeros((img_src.shape[0], img_src.shape[1], 3), np.uint8)  # Create output image
-    img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
+    height = img_src.shape[0]
+    width = img_src.shape[1]
+
+    rect = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]])
+    new_height = cv2.getPerspectiveTransform(rect, h)
+
+    # img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography  # TODO warp originale
+    h_mult = translate_homography(h, bx, by)
+    img_dst = cv2.warpPerspective(img_src, h_mult, (bwidth, bheight))  # TODO warp per scacchiera
 
     # Display resolution check
     disp = []  # Monitor info list

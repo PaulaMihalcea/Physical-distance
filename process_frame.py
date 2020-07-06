@@ -1,7 +1,7 @@
 import os
 import cv2
 import sys
-from utils import get_click_src, get_man_src
+from utils import get_points_mouse, get_points_chessboard
 from overlay import generate_overlay, apply_overlay
 from transform_coords import transform_coords
 
@@ -36,28 +36,21 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, status, out):
+def process_frame_first(cap, src, chessboard, pts_src, pts_dst, map_dim, min_distance, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        if pts_src is None:
-            while True:
-                ans = input('Would you like to click on the video in order to create an overlay (C),\n'
-                            'or do you prefer to insert source pixels manually (M)? ')
-                print('')
+        if pts_src is None and not chessboard:
+            pts_src, pts_dst, dst_dim = get_points_mouse(frame, pts_dst)
+        elif chessboard:
+            if pts_src is None:
+                pts_src, pts_dst, dst_dim = get_points_chessboard(frame, pts_src, pts_dst)
+            else:
+                _, pts_dst, dst_dim = get_points_chessboard(frame, pts_src, pts_dst)
 
-                if ans is 'c' or ans is 'C':
-                    pts_src = get_click_src(frame)
-                    break
-                elif ans is 'm' or ans is 'M':
-                    pts_src = get_man_src()
-                    break
-                else:
-                    print('Invalid answer.')
-
-        overlay_data = generate_overlay(frame, pts_src, pts_dst)  # Generate overlay
+        overlay_data = generate_overlay(frame, pts_src, pts_dst, dst_dim)  # Generate overlay
 
         map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
 
@@ -66,8 +59,6 @@ def process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, statu
         datum.cvInputData = frame
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
-
-        #people = get_people_position(datum.poseKeypoints)
 
         people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
 

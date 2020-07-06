@@ -5,11 +5,10 @@ from configparser import ConfigParser
 from process_frame import process_frame_first, process_frame
 
 
-def main(src, save=None, dst_name=None):
+def main(src, chessboard=False, save=None, dst_name=None):
 
     print('')
     print('Welcome to the Physical Distance Detector!')
-    print('')
 
     # Setup
     f = ConfigParser()
@@ -83,7 +82,7 @@ def main(src, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, pts_src, pts_dst, map_dim, min_distance, [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_dst, map_dim, min_distance, [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -107,30 +106,19 @@ def main(src, save=None, dst_name=None):
     sys.exit(0)  # Exit program
 
 
-# TODO prova la versione da linea di comando:
-'''
+'''  # TODO
 if __name__ == '__main__':
-    src = sys.argv[0]
-    save = sys.argv[1]
-    dst_name = sys.argv[2]
-
-    main(src, save, dst_name)
+    print(sys.argv)
+    if len(sys.argv) == 2:
+        main(str(sys.argv[1]))
+    if len(sys.argv) == 3:
+        main(str(sys.argv[1]), sys.argv[2])
+    if len(sys.argv) == 4:
+        main(str(sys.argv[1]), sys.argv[2], sys.argv[3])
 '''
 
+src = 'test/test_c.mp4'
+chessboard = True
+save = False
 
-
-
-
-# TODO Delete tests below:
-
-src = 'test/test_s.mp4'
-# src = 'openpose/examples/media/video.avi'
-save = True
-
-main(src, save)
-
-
-# Parametri da riga di comando:
-# source (file da leggere oppure webcam) (opzionale, se vuoto prende la webcam)
-# save (se salvare il risultato o no) (opzionale, default no)
-# destination file name (opzionale)
+main(src, chessboard, save)

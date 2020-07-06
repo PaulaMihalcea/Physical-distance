@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from adjust_position import adjust_position
 
 
-def generate_overlay(img_dst, pts_src, pts_dst):
+def generate_overlay(img_dst, pts_src, pts_dst, dst_dim=[]):
 
     # Setup
     f = ConfigParser()
@@ -37,7 +37,7 @@ def generate_overlay(img_dst, pts_src, pts_dst):
         sys.exit(-1)
 
     # Source image generation
-    img_src, h = warp(img_dst, ratio, pts_src, pts_dst)  # Generate overlay source image
+    img_src, h = warp(img_dst, ratio, pts_src, pts_dst, dst_dim)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 

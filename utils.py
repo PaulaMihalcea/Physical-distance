@@ -1,6 +1,8 @@
 import cv2
 import sys
 import numpy as np
+from configparser import ConfigParser
+from get_dst_dim import get_dst_dim, get_dst_dim_chessboard
 
 
 def is_int(n):
@@ -11,16 +13,21 @@ def is_int(n):
         return None
 
 
-def get_click_src(img_src):
+def get_points_mouse(img_src, pts_dst):
 
-    # VARIABLES
+    # Variables
+    f = ConfigParser()
+    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
+
+    ratio = f.getfloat('General', 'ratio')
+
     pts_src = None  # Source points
     img_src_b = img_src.copy()  # Image with border
 
-    # GET POINTS BY CLICK
+    # Get points by click
     while True:  # Wait for four valid source points
 
-        print('Click on the four points of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
+        print('Click on the four corners of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
               'or press SPACEBAR to add or change borders.\n'
               'Otherwise, press ESC to exit.')
         print('')
@@ -59,57 +66,49 @@ def get_click_src(img_src):
             print('')
             img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
 
-    return pts_src
+    # Get destination points
+    if pts_dst is None:
+        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
+        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+    else:
+        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
+        dst_width += 1
+        dst_height += 1
+
+    return pts_src, pts_dst, (dst_width, dst_height)
 
 
-def get_man_src():
+def get_points_chessboard(img_src, pts_src, pts_dst):
 
-    pts_src = []
+    # Variables
+    f = ConfigParser()
+    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
-    while True:
-        coords = input('Insert TOP LEFT point pixel coordinates separated by a space: ')
-        x, y = coords.split(' ')
-        x = is_int(x)
-        y = is_int(y)
-        if x is None or x < 0 or y is None or y < 0:
-            print('Invalid input.')
-        else:
-            pts_src.append([x, y])
-            break
-    while True:
-        coords = input('Insert TOP RIGHT point pixel coordinates separated by a space: ')
-        x, y = coords.split(' ')
-        x = is_int(x)
-        y = is_int(y)
-        if x is None or x < 0 or y is None or y < 0:
-            print('Invalid input.')
-        else:
-            pts_src.append([x, y])
-            break
-    while True:
-        coords = input('Insert BOTTOM RIGHT point pixel coordinates separated by a space: ')
-        x, y = coords.split(' ')
-        x = is_int(x)
-        y = is_int(y)
-        if x is None or x < 0 or y is None or y < 0:
-            print('Invalid input.')
-        else:
-            pts_src.append([x, y])
-            break
-    while True:
-        coords = input('Insert BOTTOM LEFT point pixel coordinates separated by a space: ')
-        x, y = coords.split(' ')
-        x = is_int(x)
-        y = is_int(y)
-        if x is None or x < 0 or y is None or y < 0:
-            print('Invalid input.')
-        else:
-            pts_src.append([x, y])
-            break
+    ratio = f.getfloat('General', 'ratio')
+    map_width_pixels = f.getint('General', 'map_width_pixels')
+    map_height_pixels = f.getint('General', 'map_height_pixels')
 
-    pts_src = np.vstack(pts_src).astype(float)  # Convert points array to a numpy array
+    img_src_b = img_src.copy()  # Image with border
 
-    return pts_src
+    # Get points by click
+
+    print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
+          'Otherwise, press ESC to exit.')
+    print('')
+
+    if pts_src is None:
+        pts_src = get_pts_no_borders(img_src_b)
+
+    # Get destination points
+    if pts_dst is None:
+        dst_width, dst_height = get_dst_dim_chessboard(pts_src, ratio)  # Calculate dimensions of destination image
+        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+    else:
+        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
+        dst_width += 1
+        dst_height += 1
+
+    return pts_src, pts_dst, (dst_width, dst_height)
 
 
 def get_color(n):  # Choose a color based on the number of the point that is about to be drawn
@@ -165,4 +164,30 @@ def get_pts(im):
 
     pts = np.vstack(data['pts']).astype(float)  # Convert points array to a numpy array
     
+    return pts
+
+
+def get_pts_no_borders(im):
+
+    data = {'img': im.copy(),  # Use a copy of the original image during the points' acquisition
+            'pts': []}  # Array of points
+    cv2.imshow('Choose points...', data['img'])  # Show the image to choose points on
+
+    while True:
+
+        cv2.setMouseCallback('Choose points...', mouse_handler, data)  # Set the callback function for any mouse event
+        k = cv2.waitKey(0)  # Get whatever key the user presses on keyboard
+
+        if k == 13 and len(data['pts']) == 4:  # ENTER is pressed and all four points have been acquired
+            cv2.destroyAllWindows()  # Close the choosing points window and return
+            break
+        if k == 27:  # ESC
+            print('Exiting program...')
+            sys.exit()  # Exit program
+        else:  # Any other key
+            print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['pts'])) + '). Press ENTER to continue.')
+            print('')
+
+    pts = np.vstack(data['pts']).astype(float)  # Convert points array to a numpy array
+
     return pts
