@@ -11,7 +11,7 @@ def translate_homography(h, x_offset, y_offset):
     p[0][2] = - x_offset
     p[1][2] = - y_offset
 
-    h = h.dot(p)
+    h = p.dot(h)
 
     return h
 
