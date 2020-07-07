@@ -78,37 +78,65 @@ def get_points_mouse(img_src, pts_dst):
     return pts_src, pts_dst, (dst_width, dst_height)
 
 
-def get_points_chessboard(img_src, pts_src, pts_dst):
+def get_points_chessboard(img_src, pts_src, pts_src_chessboard, pts_dst):
 
     # Variables
     f = ConfigParser()
     f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
     ratio = f.getfloat('General', 'ratio')
-    map_width_pixels = f.getint('General', 'map_width_pixels')
-    map_height_pixels = f.getint('General', 'map_height_pixels')
 
     img_src_b = img_src.copy()  # Image with border
 
     # Get points by click
 
-    print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
+    if pts_src_chessboard is None:
+        print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
           'Otherwise, press ESC to exit.')
-    print('')
+        print('')
 
-    if pts_src is None:
-        pts_src = get_pts_no_borders(img_src_b)
+        pts_src_chessboard = get_pts_no_borders(img_src_b)
 
     # Get destination points
     if pts_dst is None:
-        dst_width, dst_height = get_dst_dim_chessboard(pts_src, ratio)  # Calculate dimensions of destination image
+        pts_dst_chessboard = get_dst_dim_chessboard(pts_src, ratio)
+        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
         pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
     else:
+        pts_dst_chessboard = get_dst_dim_chessboard(pts_src, ratio)
         dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
         dst_width += 1
         dst_height += 1
 
-    return pts_src, pts_dst, (dst_width, dst_height)
+    '''
+    # Select area around chessboard  # TODO
+    pts_src[0][0] = pts_src[0][0] - map_width_pixels
+    pts_src[0][1] = pts_src[0][1] - map_height_pixels
+
+    pts_src[1][0] = pts_src[1][0] + map_width_pixels
+    pts_src[1][1] = pts_src[1][1] - map_height_pixels
+
+    pts_src[2][0] = pts_src[2][0] + map_width_pixels
+    pts_src[2][1] = pts_src[2][1] + map_height_pixels
+
+    pts_src[3][0] = pts_src[3][0] - map_width_pixels
+    pts_src[3][1] = pts_src[3][1] + map_height_pixels
+
+    # Select area around chessboard  # TODO
+    pts_dst[0][0] = pts_dst[0][0] - map_width_pixels
+    pts_dst[0][1] = pts_dst[0][1] - map_height_pixels
+
+    pts_dst[1][0] = pts_dst[1][0] + map_width_pixels
+    pts_dst[1][1] = pts_dst[1][1] - map_height_pixels
+
+    pts_dst[2][0] = pts_dst[2][0] + map_width_pixels
+    pts_dst[2][1] = pts_dst[2][1] + map_height_pixels
+
+    pts_dst[3][0] = pts_dst[3][0] - map_width_pixels
+    pts_dst[3][1] = pts_dst[3][1] + map_height_pixels
+    '''
+
+    return pts_src, pts_dst, pts_dst_chessboard, (dst_width, dst_height)
 
 
 def get_color(n):  # Choose a color based on the number of the point that is about to be drawn

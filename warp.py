@@ -1,8 +1,6 @@
 import sys
 import cv2
-import numpy as np
 from screeninfo import get_monitors
-from translate_homography import translate_homography
 
 
 def warp(img_src, ratio, pts_src, pts_dst, dst_dim, show=False):
@@ -13,15 +11,7 @@ def warp(img_src, ratio, pts_src, pts_dst, dst_dim, show=False):
 
     h, _ = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
 
-    height = img_src.shape[0]
-    width = img_src.shape[1]
-
-    rect = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]])
-    new_height = cv2.getPerspectiveTransform(rect, h)
-
-    # img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography  # TODO warp originale
-    h_mult = translate_homography(h, bx, by)
-    img_dst = cv2.warpPerspective(img_src, h_mult, (bwidth, bheight))  # TODO warp per scacchiera
+    img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
 
     # Display resolution check
     disp = []  # Monitor info list

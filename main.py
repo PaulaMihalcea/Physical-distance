@@ -9,6 +9,7 @@ def main(src, chessboard=False, save=None, dst_name=None):
 
     print('')
     print('Welcome to the Physical Distance Detector!')
+    print('')
 
     # Setup
     f = ConfigParser()
@@ -24,6 +25,18 @@ def main(src, chessboard=False, save=None, dst_name=None):
             pts_src.append([int(pts_src_ini[i].split(' ')[0]), int(pts_src_ini[i].split(' ')[1])])
         pts_src = np.array(pts_src)
         print('Reference points have been found.')
+
+    pts_src_chessboard_ini = f.get('General', 'pts_src_chessboard')  # Source points (for warp)
+    if pts_src_ini == 'None':
+        pts_src_chessboard = None
+    else:
+        pts_src_chessboard = []
+        pts_src_chessboard_ini = pts_src_chessboard_ini.split('\n')
+        for i in range(0, len(pts_src_chessboard_ini)):
+            pts_src_chessboard.append([int(pts_src_chessboard_ini[i].split(' ')[0]), int(pts_src_chessboard_ini[i].split(' ')[1])])
+        pts_src_chessboard = np.array(pts_src_chessboard)
+        if chessboard:
+            print('Chessboard reference points have been found.')
 
     pts_dst_ini = f.get('General', 'pts_dst')  # Destination points (can be either automatically calculated or manually specified)
     if pts_dst_ini == 'None':
@@ -82,7 +95,7 @@ def main(src, chessboard=False, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_dst, map_dim, min_distance, [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_dst, map_dim, min_distance, [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -117,8 +130,9 @@ if __name__ == '__main__':
         main(str(sys.argv[1]), sys.argv[2], sys.argv[3])
 '''
 
-src = 'test/test_c.mp4'
+src = 'test/test_s.mp4'
 chessboard = True
+#chessboard = False
 save = False
 
 main(src, chessboard, save)
