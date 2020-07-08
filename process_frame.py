@@ -4,10 +4,9 @@ import sys
 import numpy as np
 from configparser import ConfigParser
 from utils import get_points_mouse, get_points_chessboard
-from overlay import generate_overlay, apply_overlay
-from transform_coords import transform_coords
+from overlay import generate_overlay, generate_overlay_c, apply_overlay
+from transform_coords import transform_coords, transform_coords_c
 from get_dst_dim import get_dst_dim
-from get_map_dim_from_chessboard import get_map_dim_from_chessboard
 
 
 # OpenPose initialization
@@ -65,20 +64,20 @@ def process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_d
                     dst_height += 1
                 dst_dim = (dst_width, dst_height)
 
-            overlay_data = generate_overlay(frame, pts_src, pts_dst, dst_dim)  # Generate overlay  # TODO potrebbe causare problemi in alcuni casi
+            overlay_data = generate_overlay(frame, pts_src, pts_dst, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
 
-        else:  # TODO chessboard = True
+        else:  # chessboard = True
             if pts_src is None:
                 pts_src, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, pts_src_chessboard, pts_dst)
             else:
                 _, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, pts_src_chessboard, pts_dst)
 
-            overlay_data = generate_overlay(frame, pts_src, pts_dst, dst_dim)  # Generate overlay  # TODO potrebbe causare problemi in alcuni casi
+            overlay_data = generate_overlay_c(frame, pts_src_chessboard)  # Generate overlay  # TODO potrebbe causare problemi in alcuni casi
 
         if not chessboard:
             map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
         else:
-            map_dim = get_map_dim_from_chessboard(pts_dst_chessboard, overlay_data['overlay_dim'])
+            map_dim = overlay_data['map_dim']
             map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
 
         # OpenPose image processing
@@ -128,9 +127,7 @@ def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        #people = get_people_position(datum.poseKeypoints)
-
-        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
+        people, v = transform_coords_c(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])  # TODO
 
         # Frame overlay
         if v is not None and len(v) > 0:

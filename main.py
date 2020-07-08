@@ -131,6 +131,7 @@ if __name__ == '__main__':
 '''
 
 src = 'test/test_s.mp4'
+src = 'test/test_c.mp4'
 chessboard = True
 #chessboard = False
 save = False

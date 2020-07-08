@@ -108,34 +108,6 @@ def get_points_chessboard(img_src, pts_src, pts_src_chessboard, pts_dst):
         dst_width += 1
         dst_height += 1
 
-    '''
-    # Select area around chessboard  # TODO
-    pts_src[0][0] = pts_src[0][0] - map_width_pixels
-    pts_src[0][1] = pts_src[0][1] - map_height_pixels
-
-    pts_src[1][0] = pts_src[1][0] + map_width_pixels
-    pts_src[1][1] = pts_src[1][1] - map_height_pixels
-
-    pts_src[2][0] = pts_src[2][0] + map_width_pixels
-    pts_src[2][1] = pts_src[2][1] + map_height_pixels
-
-    pts_src[3][0] = pts_src[3][0] - map_width_pixels
-    pts_src[3][1] = pts_src[3][1] + map_height_pixels
-
-    # Select area around chessboard  # TODO
-    pts_dst[0][0] = pts_dst[0][0] - map_width_pixels
-    pts_dst[0][1] = pts_dst[0][1] - map_height_pixels
-
-    pts_dst[1][0] = pts_dst[1][0] + map_width_pixels
-    pts_dst[1][1] = pts_dst[1][1] - map_height_pixels
-
-    pts_dst[2][0] = pts_dst[2][0] + map_width_pixels
-    pts_dst[2][1] = pts_dst[2][1] + map_height_pixels
-
-    pts_dst[3][0] = pts_dst[3][0] - map_width_pixels
-    pts_dst[3][1] = pts_dst[3][1] + map_height_pixels
-    '''
-
     return pts_src, pts_dst, pts_dst_chessboard, (dst_width, dst_height)
 
 
