@@ -63,7 +63,7 @@ def warp_c(img_src, show=False):
 
     # Setup
     f = ConfigParser()
-    f.read('setup_c.ini')  # Parse the setup.ini file to retrieve settings
+    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
 
     chessboard_length_cm = f.getfloat('Chessboard', 'chessboard_length') * 100
 

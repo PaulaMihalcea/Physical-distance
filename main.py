@@ -132,10 +132,12 @@ if __name__ == '__main__':
 '''
 
 src = 'test/test_s.mp4'
-src = 'test/test_c.mp4'
+#src = 'test/test_c.mp4'
+src = 'test/test_c_2.mp4'
 #chessboard = False
-save = False
+save = True
 setup = 'setup_r.ini'
-setup = 'setup_c.ini'
+setup = 'setup.ini'
+#setup = 'setup_c_2.ini'
 
-main(src, setup, save)
+main(src, setup, save, 'test_c_2_output.avi')
