@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from process_frame import process_frame_first, process_frame
 
 
-def main(src, chessboard=False, save=None, dst_name=None):
+def main(src, setup, save=None, dst_name=None):
 
     print('')
     print('Welcome to the Physical Distance Detector!')
@@ -13,7 +13,7 @@ def main(src, chessboard=False, save=None, dst_name=None):
 
     # Setup
     f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
+    f.read(setup)  # Parse the setup.ini file to retrieve settings
 
     pts_src_ini = f.get('General', 'pts_src')  # Source points (for warp)
     if pts_src_ini == 'None':
@@ -26,17 +26,19 @@ def main(src, chessboard=False, save=None, dst_name=None):
         pts_src = np.array(pts_src)
         print('Reference points have been found.')
 
-    pts_src_chessboard_ini = f.get('General', 'pts_src_chessboard')  # Source points (for warp)
-    if pts_src_ini == 'None':
-        pts_src_chessboard = None
-    else:
-        pts_src_chessboard = []
-        pts_src_chessboard_ini = pts_src_chessboard_ini.split('\n')
-        for i in range(0, len(pts_src_chessboard_ini)):
-            pts_src_chessboard.append([int(pts_src_chessboard_ini[i].split(' ')[0]), int(pts_src_chessboard_ini[i].split(' ')[1])])
-        pts_src_chessboard = np.array(pts_src_chessboard)
-        if chessboard:
-            print('Chessboard reference points have been found.')
+    chessboard = False
+
+    if pts_src is None:
+        ans = input('Reference points have not been found; do you have a chessboard (C)\n'
+                    'or would you like to select these points directly from the map? (R) ')
+        while True:
+            if str(ans) == 'c' or 'C':
+                chessboard = True
+                break
+            elif str(ans) == 'r' or 'R':
+                break
+            else:
+                ans = input('Invalid input, try again:')
 
     pts_dst_ini = f.get('General', 'pts_dst')  # Destination points (can be either automatically calculated or manually specified)
     if pts_dst_ini == 'None':
@@ -51,7 +53,6 @@ def main(src, chessboard=False, save=None, dst_name=None):
 
     print('')
 
-    map_dim = [f.getfloat('General', 'map_width') * 100, f.getfloat('General', 'map_height') * 100]  # Real map dimensions
     min_distance = f.getfloat('General', 'min_distance') * 100
 
     if save is None:
@@ -95,7 +96,7 @@ def main(src, chessboard=False, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_dst, map_dim, min_distance, [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -119,7 +120,7 @@ def main(src, chessboard=False, save=None, dst_name=None):
     sys.exit(0)  # Exit program
 
 
-'''  # TODO
+'''  # TODO aggiorna coi nuovi parametri
 if __name__ == '__main__':
     print(sys.argv)
     if len(sys.argv) == 2:
@@ -132,8 +133,9 @@ if __name__ == '__main__':
 
 src = 'test/test_s.mp4'
 src = 'test/test_c.mp4'
-chessboard = True
 #chessboard = False
 save = False
+setup = 'setup_r.ini'
+setup = 'setup_c.ini'
 
-main(src, chessboard, save)
+main(src, setup, save)

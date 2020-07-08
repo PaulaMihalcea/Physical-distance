@@ -98,15 +98,9 @@ def get_points_chessboard(img_src, pts_src, pts_src_chessboard, pts_dst):
         pts_src_chessboard = get_pts_no_borders(img_src_b)
 
     # Get destination points
-    if pts_dst is None:
-        pts_dst_chessboard = get_dst_dim_chessboard(pts_src, ratio)
-        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
-        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-    else:
-        pts_dst_chessboard = get_dst_dim_chessboard(pts_src, ratio)
-        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
-        dst_width += 1
-        dst_height += 1
+    pts_dst_chessboard = get_dst_dim_chessboard(pts_src_chessboard, ratio)
+    dst_width, dst_height = get_dst_dim(pts_src_chessboard, ratio)  # Calculate dimensions of destination image
+    pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
 
     return pts_src, pts_dst, pts_dst_chessboard, (dst_width, dst_height)
 

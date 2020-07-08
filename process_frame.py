@@ -4,8 +4,8 @@ import sys
 import numpy as np
 from configparser import ConfigParser
 from utils import get_points_mouse, get_points_chessboard
-from overlay import generate_overlay, generate_overlay_c, apply_overlay
-from transform_coords import transform_coords, transform_coords_c
+from overlay import generate_overlay, apply_overlay
+from transform_coords import transform_coords
 from get_dst_dim import get_dst_dim
 
 
@@ -39,7 +39,7 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_dst, map_dim, min_distance, status, out):
+def process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, status, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
@@ -64,17 +64,32 @@ def process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_d
                     dst_height += 1
                 dst_dim = (dst_width, dst_height)
 
-            overlay_data = generate_overlay(frame, pts_src, pts_dst, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
-
         else:  # chessboard = True
-            if pts_src is None:
-                pts_src, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, pts_src_chessboard, pts_dst)
-            else:
-                _, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, pts_src_chessboard, pts_dst)
 
-            overlay_data = generate_overlay_c(frame, pts_src_chessboard)  # Generate overlay  # TODO potrebbe causare problemi in alcuni casi
+            f = ConfigParser()
+            f.read('setup_c.ini')  # Parse the setup.ini file to retrieve settings
+
+            chessboard_src_ini = f.get('Chessboard', 'chessboard_src')  # Source points (for warp)
+            if chessboard_src_ini == 'None':
+                chessboard_src = None
+            else:
+                chessboard_src = []
+                chessboard_src_ini = chessboard_src_ini.split('\n')
+                for i in range(0, len(chessboard_src_ini)):
+                    chessboard_src.append([int(chessboard_src_ini[i].split(' ')[0]), int(chessboard_src_ini[i].split(' ')[1])])
+            chessboard_src = np.array(chessboard_src)  # TODO float32 array
+            print('Chessboard reference points have been found.')
+
+
+            if pts_src is None:
+                pts_src, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, chessboard_src, pts_dst)
+            else:
+                _, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, chessboard_src, pts_dst)
+
+        overlay_data = generate_overlay(frame, pts_src, pts_dst, chessboard_src, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
 
         if not chessboard:
+            map_dim = [f.getfloat('General', 'map_width') * 100, f.getfloat('General', 'map_height') * 100]  # Real map dimensions
             map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
         else:
             map_dim = overlay_data['map_dim']
@@ -86,7 +101,7 @@ def process_frame_first(cap, src, chessboard, pts_src, pts_src_chessboard, pts_d
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance)
+        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])
 
         # Frame overlay
         if v is not None and len(v) > 0:
@@ -127,7 +142,7 @@ def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v = transform_coords_c(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])  # TODO
+        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])
 
         # Frame overlay
         if v is not None and len(v) > 0:

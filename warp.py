@@ -59,16 +59,27 @@ def warp(img_src, pts_src, pts_dst, dst_dim, show=False):
     return img_dst, h
 
 
-def warp_c(img_src, pts_src, show=False):
+def warp_c(img_src, show=False):
 
     # Setup
     f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
+    f.read('setup_c.ini')  # Parse the setup.ini file to retrieve settings
 
     chessboard_length_cm = f.getfloat('Chessboard', 'chessboard_length') * 100
 
     roi_x_cm = f.getfloat('Chessboard', 'roi_x') * 100
     roi_y_cm = f.getfloat('Chessboard', 'roi_y') * 100
+
+    pts_src_ini = f.get('Chessboard', 'chessboard_src')  # Source points (for warp)
+    if pts_src_ini == 'None':
+        pts_src = None
+    else:
+        pts_src = []
+        pts_src_ini = pts_src_ini.split('\n')
+        for i in range(0, len(pts_src_ini)):
+            pts_src.append([int(pts_src_ini[i].split(' ')[0]), int(pts_src_ini[i].split(' ')[1])])
+        pts_src = np.array(pts_src)  # TODO float32 array
+        print('Chessboard reference points have been found.')
 
     # Chessboard length in pixels
     dst_dim = get_dst_dim(pts_src)
@@ -146,4 +157,4 @@ def warp_c(img_src, pts_src, show=False):
             print('Exiting program...')
             sys.exit()  # Exit program
 
-    return img_dst, th, (roi_x_cm * 2 + chessboard_length_cm, roi_y_cm * 2 + chessboard_length_cm), (x_translation - roi_x_px, y_translation - roi_y_px)
+    return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + chessboard_length_cm, roi_y_cm * 2 + chessboard_length_cm)
