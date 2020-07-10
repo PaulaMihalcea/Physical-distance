@@ -2,7 +2,7 @@ import cv2
 import sys
 import numpy as np
 from configparser import ConfigParser
-from get_dst_dim import get_dst_dim, get_dst_dim_chessboard
+from get_dim import get_dim
 
 
 def is_int(n):
@@ -13,13 +13,11 @@ def is_int(n):
         return None
 
 
-def get_points_mouse(img_src, pts_dst):
+def get_points_mouse(img_src, map_data, mode):
 
     # Variables
-    f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
-
-    ratio = f.getfloat('General', 'ratio')
+    pts_dst = map_data['map_dst']
+    ratio = map_data['ratio']
 
     pts_src = None  # Source points
     img_src_b = img_src.copy()  # Image with border
@@ -68,28 +66,24 @@ def get_points_mouse(img_src, pts_dst):
 
     # Get destination points
     if pts_dst is None:
-        dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
+        dst_width, dst_height = get_dim(pts_src, mode, ratio)  # Calculate dimensions of destination image
         pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
     else:
-        dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
+        dst_width, dst_height = get_dim(pts_dst, mode, ratio)  # Calculate dimensions of destination image
         dst_width += 1
         dst_height += 1
+
+    map_data['map_src'] = pts_src
+    map_data['map_dst'] = pts_dst
 
     return pts_src, pts_dst, (dst_width, dst_height)
 
 
-def get_points_chessboard(img_src, pts_src, pts_src_chessboard, pts_dst):
-
-    # Variables
-    f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
-
-    ratio = f.getfloat('General', 'ratio')
+def get_points_chessboard(img_src, pts_src_chessboard, mode):
 
     img_src_b = img_src.copy()  # Image with border
 
     # Get points by click
-
     if pts_src_chessboard is None:
         print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
           'Otherwise, press ESC to exit.')
@@ -98,11 +92,11 @@ def get_points_chessboard(img_src, pts_src, pts_src_chessboard, pts_dst):
         pts_src_chessboard = get_pts_no_borders(img_src_b)
 
     # Get destination points
-    pts_dst_chessboard = get_dst_dim_chessboard(pts_src_chessboard, ratio)
-    dst_width, dst_height = get_dst_dim(pts_src_chessboard, ratio)  # Calculate dimensions of destination image
-    pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+    pts_dst_chessboard = get_dim(pts_src_chessboard, mode)
+    dst_width, dst_height = get_dim(pts_src_chessboard, mode)  # Calculate dimensions of destination image
+    pts_dst_chessboard = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
 
-    return pts_src, pts_dst, pts_dst_chessboard, (dst_width, dst_height)
+    return pts_src_chessboard, pts_dst_chessboard, (dst_width, dst_height)
 
 
 def get_color(n):  # Choose a color based on the number of the point that is about to be drawn

@@ -1,20 +1,66 @@
 import sys
 import cv2
 import numpy as np
-from configparser import ConfigParser
+import inspect
 from screeninfo import get_monitors
-from get_dst_dim import get_dst_dim
+from get_dim import get_dim
 
 
-def warp(img_src, pts_src, pts_dst, dst_dim, show=False):
+def warp(img_src, map_data, dst_dim, mode, chessboard_data=None, show=False):
 
-    # Warp
-    dst_width = dst_dim[0]  # TODO rimuovi (anche dalla signature)
-    dst_height = dst_dim[1]  # TODO rimuovi (anche dalla signature)
+    if mode:
 
-    h, _ = cv2.findHomography(pts_src, pts_dst)  # Calculate homography
+        # Warp
+        dst_width = dst_dim[0]  # TODO rimuovi (anche dalla signature)
+        dst_height = dst_dim[1]  # TODO rimuovi (anche dalla signature)
 
-    img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
+        h, _ = cv2.findHomography(map_data['map_src'], map_data['map_dst'])  # Calculate homography
+
+        img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
+
+    elif not mode:
+
+        chessboard_length_cm = chessboard_data['chessboard_length'] * 100
+
+        roi_x_cm = chessboard_data['roi_x'] * 100
+        roi_y_cm = chessboard_data['roi_y'] * 100
+
+        chessboard_src = chessboard_data['chessboard_src']
+
+        # Chessboard length in pixels
+        chessboard_length_px = get_dim(chessboard_src, mode)[0]
+
+        chessboard_dst = np.array([[0, 0], [chessboard_length_px, 0], [chessboard_length_px, chessboard_length_px], [0, chessboard_length_px]])
+
+        # Homography
+        h, _ = cv2.findHomography(chessboard_src, chessboard_dst)
+
+        src_width = img_src.shape[1]
+        src_height = img_src.shape[0]
+
+        x_translation = src_width * 10
+        y_translation = src_height * 10
+
+        t = np.array([[1, 0, x_translation],
+                      [0, 1, y_translation],
+                      [0, 0, 1]], dtype='float32')
+
+        th = np.dot(t, h)
+
+        dst_width = int(th[0][2]) * 10
+        dst_height = int(th[1][2]) * 10
+
+        img_dst = cv2.warpPerspective(img_src, th, (dst_width, dst_height))
+
+        # Cropping
+        roi_x_px = int(chessboard_length_px * roi_x_cm / chessboard_length_cm)
+        roi_y_px = int(chessboard_length_px * roi_y_cm / chessboard_length_cm)
+
+        img_dst = img_dst[y_translation - roi_y_px: y_translation + chessboard_length_px + roi_y_px, x_translation - roi_x_px: x_translation + chessboard_length_px + roi_x_px]
+
+    else:  # Shouldn't even get to this point, but whatever
+        print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
+        sys.exit(-1)
 
     # Display resolution check
     disp = []  # Monitor info list
@@ -56,43 +102,28 @@ def warp(img_src, pts_src, pts_dst, dst_dim, show=False):
             print('Exiting program...')
             sys.exit()  # Exit program
 
-    return img_dst, h
+    if mode:
+        return img_dst, h, None, None
+    elif not mode:
+        return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + chessboard_length_cm, roi_y_cm * 2 + chessboard_length_cm)
 
 
-def warp_c(img_src, show=False):
+def warp_c(img_src, flags, chessboard_data=None, show=False):  # TODO delete duplicate function
 
-    # Setup
-    f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
+    chessboard_length_cm = chessboard_data['chessboard_length'] * 100
 
-    chessboard_length_cm = f.getfloat('Chessboard', 'chessboard_length') * 100
+    roi_x_cm = chessboard_data['roi_x'] * 100
+    roi_y_cm = chessboard_data['roi_y'] * 100
 
-    roi_x_cm = f.getfloat('Chessboard', 'roi_x') * 100
-    roi_y_cm = f.getfloat('Chessboard', 'roi_y') * 100
-
-    pts_src_ini = f.get('Chessboard', 'chessboard_src')  # Source points (for warp)
-    if pts_src_ini == 'None':
-        pts_src = None
-    else:
-        pts_src = []
-        pts_src_ini = pts_src_ini.split('\n')
-        for i in range(0, len(pts_src_ini)):
-            pts_src.append([int(pts_src_ini[i].split(' ')[0]), int(pts_src_ini[i].split(' ')[1])])
-        pts_src = np.array(pts_src)  # TODO float32 array
-        print('Chessboard reference points have been found.')
+    chessboard_src = chessboard_data['chessboard_src']
 
     # Chessboard length in pixels
-    dst_dim = get_dst_dim(pts_src)
+    chessboard_length_px = get_dim(chessboard_src, flags)[0]
 
-    if dst_dim[0] > dst_dim[1]:
-        chessboard_length_px = dst_dim[0] - 1
-    else:
-        chessboard_length_px = dst_dim[1] - 1
-
-    pts_dst = np.array([[0, 0], [chessboard_length_px, 0], [chessboard_length_px, chessboard_length_px], [0, chessboard_length_px]])
+    chessboard_dst = np.array([[0, 0], [chessboard_length_px, 0], [chessboard_length_px, chessboard_length_px], [0, chessboard_length_px]])
 
     # Homography
-    h, _ = cv2.findHomography(pts_src, pts_dst)
+    h, _ = cv2.findHomography(chessboard_src, chessboard_dst)
 
     src_width = img_src.shape[1]
     src_height = img_src.shape[0]
@@ -109,7 +140,7 @@ def warp_c(img_src, show=False):
     dst_width = int(th[0][2]) * 10
     dst_height = int(th[1][2]) * 10
 
-    img_dst = cv2.warpPerspective(img_src, th, (dst_width, dst_height), borderValue=(255, 0, 0, 255))  # TODO Change background color to black
+    img_dst = cv2.warpPerspective(img_src, th, (dst_width, dst_height))
 
     # Cropping
     roi_x_px = int(chessboard_length_px * roi_x_cm / chessboard_length_cm)

@@ -2,65 +2,45 @@ import cv2
 import sys
 import numpy as np
 from warp import warp, warp_c
-from configparser import ConfigParser
 from adjust_position import adjust_position
 
 
-def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
+def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mode, dst_dim=[]):
+
+    pts_src = map_data['map_src']
+    pts_dst = map_data['map_dst']
+    chessboard_src = chessboard_data['chessboard_src']
 
     # Setup
-    f = ConfigParser()
-    f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
-
-    status_bar_min_width = f.getint('Overlay', 'status_bar_min_width')  # Minimum status bar width
-    status_bar_min_height = f.getint('Overlay', 'status_bar_min_height')  # Minimum status bar height
+    status_bar_min_width = overlay['status_bar_min_width']
+    status_bar_min_height = overlay['status_bar_min_height']
 
     overlay_max_width = img_dst.shape[1] - status_bar_min_width  # Maximum overlay width (status bar dependent)
-    overlay_max_height = int(img_dst.shape[0] / 100 * f.getint('Overlay', 'overlay_max_height'))  # Maximum overlay height (percentage (!) of frame height)
+    overlay_max_height = int(img_dst.shape[0] / 100 * overlay['overlay_max_height'])  # Maximum overlay height (percentage (!) of frame height)
 
-    border_thickness = f.getint('Overlay', 'border_thickness')  # Overlay border thickness in pixels
-    overlay_position = f.getint('Overlay', 'overlay_position')  # Overlay position on the video (0: top left; 1: top right; 2: bottom right; 3: bottom left)
+    hor_offset = overlay['hor_offset']
+    ver_offset = overlay['ver_offset']
 
-    hor_offset = f.getint('Overlay', 'hor_offset')  # Manual horizontal offset (for people representation)
-    ver_offset = f.getint('Overlay', 'ver_offset')  # Manual vertical offset (for people representation)
+    position_tolerance = overlay['position_tolerance']
 
-    position_tolerance = f.getint('Overlay', 'position_tolerance')
+    overlay_colors = {
+        'status_bar_background': status_bar['status_bar_background'],
+        'overlay_left_top_border': status_bar['overlay_left_top_border'],
+        'overlay_right_bottom_border': status_bar['overlay_right_bottom_border']
+    }
 
-    overlay_colors = {'status_bar_background': tuple(map(int, f.get('Status bar colors', 'status_bar_background').split(', '))),
-                      'overlay_left_top_border': tuple(map(int, f.get('Status bar colors', 'overlay_left_top_border').split(', '))),
-                      'overlay_right_bottom_border': tuple(map(int, f.get('Status bar colors', 'overlay_right_bottom_border').split(', ')))
-                      }
-
-    if overlay_position != 0 and overlay_position != 1 and overlay_position != 2 and overlay_position != 3:  # Check overlay position validity
+    if overlay['overlay_position'] != 0 and overlay['overlay_position'] != 1 and overlay['overlay_position'] != 2 and overlay['overlay_position'] != 3:  # Check overlay position validity
         print('Invalid overlay position.')
         sys.exit(-1)
 
-    chessboard_src_ini = f.get('Chessboard', 'chessboard_src')  # Source points (for warp)
-    if chessboard_src_ini == 'None':
-        chessboard_src = None
-    else:
-        chessboard_src = []
-        chessboard_src_ini = chessboard_src_ini.split('\n')
-        for i in range(0, len(chessboard_src_ini)):
-            chessboard_src.append([int(chessboard_src_ini[i].split(' ')[0]), int(chessboard_src_ini[i].split(' ')[1])])
-        chessboard_src = np.array(chessboard_src)  # TODO float32 array
-        print('Chessboard reference points have been found.')
-
     # Source image generation
-    '''
-    if chessboard_src is not None:
-        img_src, h = warp(img_dst, pts_src, pts_dst, dst_dim)  # Generate overlay source image
-        warp_offset = (0, 0)
-        map_dim = (0, 0)
-    else:
-'''
-    img_src, h, warp_offset, map_dim = warp_c(img_dst, pts_src)  # Generate overlay source image
+    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, dst_dim, mode, chessboard_data)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 
     # Overlay size check
-    if img_src.shape[1] + border_thickness * 2 > overlay_max_width:  # Check if overlay width is too large
-        new_width = overlay_max_width - border_thickness * 2
+    if img_src.shape[1] + overlay['border_thickness'] * 2 > overlay_max_width:  # Check if overlay width is too large
+        new_width = overlay_max_width - overlay['border_thickness'] * 2
         new_height = int(overlay_max_width / img_src.shape[1] * img_src.shape[0])
         if new_width == 0:
             new_width = 1
@@ -68,7 +48,7 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
             new_height = 1
         img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
 
-    if img_src.shape[0] + border_thickness * 2 > overlay_max_height:  # Check if overlay height is too large
+    if img_src.shape[0] + overlay['border_thickness'] * 2 > overlay_max_height:  # Check if overlay height is too large
         new_height = overlay_max_height
         new_width = int(overlay_max_height / img_src.shape[0] * img_src.shape[1])
         if new_width == 0:
@@ -79,10 +59,10 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
 
     # Overlay background
     if img_src.shape[0] < status_bar_min_height:  # Add empty background to overlay if it's too small with respect to the status bar
-        offset = int((status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 2)) / 2) - 1
+        offset = int((status_bar_min_height - (img_src.shape[0] + overlay['border_thickness'] * 2 - 2)) / 2) - 1
         if offset < 0:
             offset = 0
-        if (status_bar_min_height - (img_src.shape[0] + border_thickness * 2 - 1)) % 2 == 0:
+        if (status_bar_min_height - (img_src.shape[0] + overlay['border_thickness'] * 2 - 1)) % 2 == 0:
             img_src = cv2.copyMakeBorder(img_src, offset + 1, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
         else:
             img_src = cv2.copyMakeBorder(img_src, offset, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
@@ -91,27 +71,27 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
         offset = 0
 
     # Overlay border creation
-    img_src = cv2.copyMakeBorder(img_src, border_thickness, 0, border_thickness, 0, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_left_top_border'])
-    img_src = cv2.copyMakeBorder(img_src, 0, border_thickness, 0, border_thickness, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_right_bottom_border'])
+    img_src = cv2.copyMakeBorder(img_src, overlay['border_thickness'], 0, overlay['border_thickness'], 0, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_left_top_border'])
+    img_src = cv2.copyMakeBorder(img_src, 0, overlay['border_thickness'], 0, overlay['border_thickness'], cv2.BORDER_CONSTANT, value=overlay_colors['overlay_right_bottom_border'])
 
     overlay_width = img_src.shape[1]
     overlay_height = img_src.shape[0]
 
     # Overlay position
     corners = []
-    if overlay_position == 0:  # Top left
+    if overlay['overlay_position'] == 0:  # Top left
         start_point = [0, 0]
         end_point = [overlay_width, overlay_height]
         corners.extend([(end_point[0], 0), (img_dst.shape[1] - 1, 0), (img_dst.shape[1] - 1, status_bar_min_height), (end_point[0], status_bar_min_height)])
-    elif overlay_position == 1:  # Top right
+    elif overlay['overlay_position'] == 1:  # Top right
         start_point = [img_dst.shape[1] - overlay_width, 0]
         end_point = [img_dst.shape[1], overlay_height]
         corners.extend([(0, 0), (start_point[0] - 1, 0), (start_point[0] - 1, status_bar_min_height), (0, status_bar_min_height)])
-    elif overlay_position == 2:  # Bottom right
+    elif overlay['overlay_position'] == 2:  # Bottom right
         start_point = [img_dst.shape[1] - overlay_width, img_dst.shape[0] - overlay_height]
         end_point = [img_dst.shape[1], img_dst.shape[0]]
         corners.extend([(0, start_point[1] - status_bar_min_height + overlay_height - 1), (start_point[0] - 1, start_point[1] - status_bar_min_height + overlay_height - 1), (start_point[0] - 1, img_dst.shape[0] - 1), (0, img_dst.shape[0] - 1)])
-    elif overlay_position == 3:  # Bottom left
+    elif overlay['overlay_position'] == 3:  # Bottom left
         start_point = (0, img_dst.shape[0] - overlay_height)
         end_point = (overlay_width, img_dst.shape[0])
         corners.extend([(end_point[0], start_point[1] - status_bar_min_height + overlay_height - 1), (img_dst.shape[1] - 1, start_point[1] - status_bar_min_height + overlay_height - 1), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
@@ -120,7 +100,7 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
     height_ratio = src_height / img_src.shape[0]
 
     overlay_data = {'img_src': img_src,
-                    'overlay_position': overlay_position,
+                    'overlay_position': overlay['overlay_position'],
                     'overlay_dim': [overlay_width, overlay_height],
                     'overlay_colors': overlay_colors,
                     'start_end_points': [start_point, end_point],
@@ -128,7 +108,7 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
                     'h': h,
                     'width_height_ratio': [width_ratio, height_ratio],
                     'offset': [hor_offset, ver_offset],
-                    'border_thickness': border_thickness,
+                    'border_thickness': overlay['border_thickness'],
                     'map_offset': offset,
                     'position_tolerance': position_tolerance,
                     'warp_offset': warp_offset,
@@ -138,7 +118,7 @@ def generate_overlay(img_dst, pts_src, pts_dst, chessboard_src, dst_dim=[]):
     return overlay_data
 
 
-def apply_overlay(img_dst, overlay_data, people, status=[]):
+def apply_overlay(img_dst, overlay_data, people, status_bar_data=[]):
 
     # Parameters
     img_src = overlay_data['img_src']
@@ -207,8 +187,8 @@ def apply_overlay(img_dst, overlay_data, people, status=[]):
         n_people = str(0)
 
     # Status bar text
-    img_dst = cv2.putText(img_dst, status[0][0] + ' ' + n_people, (corners[0][0] + status[0][2] - 1, corners[0][1] + status[0][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[0][1], 1)  # First line
-    img_dst = cv2.putText(img_dst, status[1][0], (corners[0][0] + status[1][2] - 1, corners[0][1] + status[1][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[1][1], 1)  # Second line
-    img_dst = cv2.putText(img_dst, status[2][0], (corners[0][0] + status[2][2] - 1, corners[0][1] + status[2][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status[2][1], 1)  # Third line
+    img_dst = cv2.putText(img_dst, status_bar_data[0][0] + ' ' + n_people, (corners[0][0] + status_bar_data[0][2] - 1, corners[0][1] + status_bar_data[0][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data[0][1], 1)  # First line
+    img_dst = cv2.putText(img_dst, status_bar_data[1][0], (corners[0][0] + status_bar_data[1][2] - 1, corners[0][1] + status_bar_data[1][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data[1][1], 1)  # Second line
+    img_dst = cv2.putText(img_dst, status_bar_data[2][0], (corners[0][0] + status_bar_data[2][2] - 1, corners[0][1] + status_bar_data[2][3]), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data[2][1], 1)  # Third line
 
     return img_dst

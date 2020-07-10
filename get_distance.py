@@ -1,7 +1,10 @@
 import numpy as np
 
 
-def get_distance(points, map_ratio, min_distance):
+def get_distance(points, min_distance, map_ratio=1):
+
+    if isinstance(map_ratio, str) or map_ratio is None:
+        map_ratio = 1
 
     points = np.asmatrix(points, dtype='float64')
     points[:, 0] *= map_ratio[0]

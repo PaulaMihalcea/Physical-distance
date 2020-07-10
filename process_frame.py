@@ -1,12 +1,12 @@
 import os
 import cv2
 import sys
+import inspect
 import numpy as np
-from configparser import ConfigParser
 from utils import get_points_mouse, get_points_chessboard
 from overlay import generate_overlay, apply_overlay
 from transform_coords import transform_coords
-from get_dst_dim import get_dst_dim
+from get_dim import get_dim
 
 
 # OpenPose initialization
@@ -39,61 +39,46 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, status, out):
+def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance, status_bar, overlay_data, out):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        if not chessboard:
+        status_bar_text = status_bar[1]
 
-            if pts_src is None:
-                pts_src, pts_dst, dst_dim = get_points_mouse(frame, pts_dst)
-            elif pts_src is not None:
-                f = ConfigParser()
-                f.read('setup.ini')  # Parse the setup.ini file to retrieve settings
-
-                ratio = f.getfloat('General', 'ratio')
+        if mode:  # Map
+            if map_data['map_src'] is None:
+                map_data['map_src'], map_data['map_dst'], dst_dim = get_points_mouse(frame, map_data, mode)
+            elif map_data['map_src'] is not None:
                 # Get destination points
-                if pts_dst is None:
-                    dst_width, dst_height = get_dst_dim(pts_src, ratio)  # Calculate dimensions of destination image
-                    pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+                if map_data['map_dst'] is None:
+                    dst_width, dst_height = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+                    map_data['map_dst'] = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
                 else:
-                    dst_width, dst_height = get_dst_dim(pts_dst, ratio)  # Calculate dimensions of destination image
-                    dst_width += 1
+                    dst_width, dst_height = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+                    dst_width += 1  # TODO perché +=1?
                     dst_height += 1
                 dst_dim = (dst_width, dst_height)
 
-        else:  # chessboard = True
-
-            f = ConfigParser()
-            f.read('setup_c.ini')  # Parse the setup.ini file to retrieve settings
-
-            chessboard_src_ini = f.get('Chessboard', 'chessboard_src')  # Source points (for warp)
-            if chessboard_src_ini == 'None':
-                chessboard_src = None
+        elif not mode:  # Chessboard
+            if chessboard_data['chessboard_src'] is None:
+                chessboard_data['chessboard_src'], chessboard_data['pts_dst'], dst_dim = get_points_chessboard(frame, chessboard_data['chessboard_src'], mode)
             else:
-                chessboard_src = []
-                chessboard_src_ini = chessboard_src_ini.split('\n')
-                for i in range(0, len(chessboard_src_ini)):
-                    chessboard_src.append([int(chessboard_src_ini[i].split(' ')[0]), int(chessboard_src_ini[i].split(' ')[1])])
-            chessboard_src = np.array(chessboard_src)  # TODO float32 array
-            print('Chessboard reference points have been found.')
+                _, chessboard_data['pts_dst'], dst_dim = get_points_chessboard(frame, chessboard_data['chessboard_src'], mode)
 
+        else:  # Shouldn't even get to this point, but whatever
+            print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
+            sys.exit(-1)
 
-            if pts_src is None:
-                pts_src, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, chessboard_src, pts_dst)
-            else:
-                _, pts_dst, pts_dst_chessboard, dst_dim = get_points_chessboard(frame, pts_src, chessboard_src, pts_dst)
+        overlay_new_data = generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
 
-        overlay_data = generate_overlay(frame, pts_src, pts_dst, chessboard_src, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
-
-        if not chessboard:
-            map_dim = [f.getfloat('General', 'map_width') * 100, f.getfloat('General', 'map_height') * 100]  # Real map dimensions
-            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
-        else:
-            map_dim = overlay_data['map_dim']
-            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
+        if mode:
+            map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions
+            map_ratio = [map_dim[0] / overlay_new_data['overlay_dim'][0], map_dim[1] / overlay_new_data['overlay_dim'][1]]
+        elif not mode:
+            map_dim = overlay_new_data['map_dim']
+            map_ratio = [map_dim[0] / overlay_new_data['overlay_dim'][0], map_dim[1] / overlay_new_data['overlay_dim'][1]]
 
         # OpenPose image processing
         datum = op.Datum()
@@ -101,13 +86,13 @@ def process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, st
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])
+        people, v = transform_coords(datum.poseKeypoints, overlay_new_data['h'], overlay_new_data['width_height_ratio'], map_ratio, min_distance, overlay_new_data['warp_offset'])
 
         # Frame overlay
         if v is not None and len(v) > 0:
-            frame = apply_overlay(frame, overlay_data, [people, v], status[1])
+            frame = apply_overlay(frame, overlay_new_data, [people, v], status_bar_text[1])
         else:
-            frame = apply_overlay(frame, overlay_data, [people, v], status[0])
+            frame = apply_overlay(frame, overlay_new_data, [people, v], status_bar_text[0])
 
         # Save
         if out is not None:
@@ -128,13 +113,15 @@ def process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, st
     else:
         return False
 
-    return True, overlay_data, map_ratio
+    return True, overlay_new_data, map_ratio
 
 
-def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
+def process_frame(cap, src, overlay_data, map_ratio, min_distance, status_bar, out):
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
+
+        status_bar_text = status_bar[1]
 
         # OpenPose image processing
         datum = op.Datum()
@@ -146,9 +133,9 @@ def process_frame(cap, src, overlay_data, map_ratio, min_distance, status, out):
 
         # Frame overlay
         if v is not None and len(v) > 0:
-            frame = apply_overlay(frame, overlay_data, [people, v], status[1])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[1])
         else:
-            frame = apply_overlay(frame, overlay_data, [people, v], status[0])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[0])
 
         # Save
         if out is not None:

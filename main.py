@@ -12,32 +12,31 @@ def main(src, setup_file, save=None, dst_name=None):
     print('')
 
     # Setup
-    system, map_data, chessboard_data, overlay, status_bar_text, status_bar_colors = read_ini(setup_file)
-    map_flag = False
-    chess_flag = False
+    system, map_data, chessboard_data, overlay, status_bar_data = read_ini(setup_file)
+    mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
 
     # Mode detection (map or chessboard)
     if map_data['map_src'] is None and chessboard_data['chessboard_src'] is None:  # No reference points found
         ans = input('No chessboard or map source points have been found; do you have a chessboard (C)\n'
                     'or would you like to select these points directly from the map? (M) ')
         while True:
-            if str(ans) == 'c' or 'C':
-                chess_flag = True
+            if str(ans) == 'c' or str(ans) == 'C':
+                mode = False
                 break
-            elif str(ans) == 'm' or 'M':
-                map_flag = True
+            elif str(ans) == 'm' or str(ans) == 'M':
+                mode = True
                 break
             else:
                 ans = input('Invalid input, try again:')
 
     elif isinstance(map_data['map_src'], np.ndarray) and chessboard_data['chessboard_src'] is None:  # Map reference points found
-        map_flag = True
+        mode = True
         print('Map reference points have been found.')
         if isinstance(map_data['map_dst'], np.ndarray):
             print('Map destination points have been found.')
 
     elif isinstance(chessboard_data['chessboard_src'], np.ndarray) and map_data['map_src'] is None:  # Chessboard reference points found
-        chess_flag = True
+        mode = False
         print('Chessboard reference points have been found.')
 
     elif isinstance(map_data['map_src'], np.ndarray) and isinstance(chessboard_data['chessboard_src'], np.ndarray):  # Both map and chessboard reference points found
@@ -45,11 +44,14 @@ def main(src, setup_file, save=None, dst_name=None):
                     'would you like to create the map using the chessboard corners (C)\n'
                     'or the given map source points? (M) ')
         while True:
-            if str(ans) == 'c' or 'C':
-                chess_flag = True
+            if str(ans) == 'c' or str(ans) == 'C':
+                mode = False
                 break
-            elif str(ans) == 'm' or 'M':
-                map_flag = True
+            elif str(ans) == 'm' or str(ans) == 'M':
+                mode = True
+                if map_data['map_dst'] is not None:
+                    print('')
+                    print('Map destination points have been found.')
                 break
             else:
                 ans = input('Invalid input, try again:')
@@ -60,16 +62,17 @@ def main(src, setup_file, save=None, dst_name=None):
 
     print('')
 
+    # Parameters
     if save is None:
         save = system['default_save']
 
-    status = [[status_bar_text['status_1'], status_bar_text['status_1_color'], status_bar_text['status_1_offset'], status_bar_text['line_spacing_1']],
-             [status_bar_text['status_2'], status_bar_text['status_2_color'], status_bar_text['status_2_offset'], status_bar_text['line_spacing_2']],
-             [status_bar_text['status_3'], status_bar_text['status_3_color'], status_bar_text['status_3_offset'], status_bar_text['line_spacing_3']]]  # Overlay status text
+    status_text = [[[status_bar_data['status_1'], status_bar_data['status_1_color'], status_bar_data['status_1_offset'], status_bar_data['line_spacing_1']],
+                    [status_bar_data['status_2'], status_bar_data['status_2_color'], status_bar_data['status_2_offset'], status_bar_data['line_spacing_2']],
+                    [status_bar_data['status_3'], status_bar_data['status_3_color'], status_bar_data['status_3_offset'], status_bar_data['line_spacing_3']]],
 
-    status_alt = [[status_bar_text['status_1_alt'], status_bar_text['status_1_color_alt'], status_bar_text['status_1_offset_alt'], status_bar_text['line_spacing_1_alt']],
-                  [status_bar_text['status_2_alt'], status_bar_text['status_2_color_alt'], status_bar_text['status_2_offset_alt'], status_bar_text['line_spacing_2_alt']],
-                  [status_bar_text['status_3_alt'], status_bar_text['status_3_color_alt'], status_bar_text['status_3_offset_alt'], status_bar_text['line_spacing_3_alt']]]  # Overlay alternative status text
+                   [[status_bar_data['status_1_alt'], status_bar_data['status_1_color_alt'], status_bar_data['status_1_offset_alt'], status_bar_data['line_spacing_1_alt']],
+                    [status_bar_data['status_2_alt'], status_bar_data['status_2_color_alt'], status_bar_data['status_2_offset_alt'], status_bar_data['line_spacing_2_alt']],
+                    [status_bar_data['status_3_alt'], status_bar_data['status_3_color_alt'], status_bar_data['status_3_offset_alt'], status_bar_data['line_spacing_3_alt']]]]
 
     # Video stream loading
     cap = cv2.VideoCapture(src)  # 0 or -1 for default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
@@ -97,7 +100,7 @@ def main(src, setup_file, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, chess_flag, pts_src, pts_dst, system['min_distance'], [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, mode, map_data, chessboard_data, system['min_distance'], [status_bar_data, status_text], overlay, out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -105,7 +108,7 @@ def main(src, setup_file, save=None, dst_name=None):
 
     # Video processing
     while process:
-        process = process_frame(cap, src, overlay_data, map_ratio, system['min_distance'], [status, status_alt], out)
+        process = process_frame(cap, src, overlay_data, map_ratio, system['min_distance'], [status_bar_data, status_text], out)
 
     # Final operations
     cap.release()  # Release capture when finished
@@ -133,12 +136,13 @@ if __name__ == '__main__':
 '''
 
 src = 'test/test_s.mp4'
-src = 'test/test_c.mp4'
-src = 'test/test_c_2.mp4'
+#src = 'test/test_c.mp4'
+#src = 'test/test_c_2.mp4'
 #chessboard = False
-save = True
+save = False
 setup = 'setup_r.ini'
 setup = 'setup_c.ini'
 #setup = 'setup_c_2.ini'
+setup = 'setup.ini'
 
 main(src, setup, save, 'test_c_2_openpose.avi')

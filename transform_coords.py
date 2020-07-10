@@ -14,6 +14,9 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
     else:
         points = None
 
+    if warp_offset is None:
+        warp_offset = [0, 0]
+
     if points is not None and len(points) > 1:
 
         for i in range(0, len(points)):
@@ -23,7 +26,7 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
 
         points = points.astype('int')
 
-        distances = get_distance(points, map_ratio, min_distance)
+        distances = get_distance(points, min_distance, map_ratio)
 
     elif points is not None and len(points) == 1:
         for i in range(0, len(points)):
