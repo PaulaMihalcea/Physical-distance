@@ -1,83 +1,85 @@
 import cv2
 import numpy as np
 import sys
-from configparser import ConfigParser
+from read_ini import read_ini
 from process_frame import process_frame_first, process_frame
 
 
-def main(src, setup, save=None, dst_name=None):
+def main(src, setup_file, save=None, dst_name=None):
 
     print('')
     print('Welcome to the Physical Distance Detector!')
     print('')
 
     # Setup
-    f = ConfigParser()
-    f.read(setup)  # Parse the setup.ini file to retrieve settings
+    system, map_data, chessboard_data, overlay, status_bar_text, status_bar_colors = read_ini(setup_file)
+    map_flag = False
+    chess_flag = False
 
-    pts_src_ini = f.get('General', 'pts_src')  # Source points (for warp)
-    if pts_src_ini == 'None':
-        pts_src = None
-    else:
-        pts_src = []
-        pts_src_ini = pts_src_ini.split('\n')
-        for i in range(0, len(pts_src_ini)):
-            pts_src.append([int(pts_src_ini[i].split(' ')[0]), int(pts_src_ini[i].split(' ')[1])])
-        pts_src = np.array(pts_src)
-        print('Reference points have been found.')
-
-    chessboard = False
-
-    if pts_src is None:
-        ans = input('Reference points have not been found; do you have a chessboard (C)\n'
-                    'or would you like to select these points directly from the map? (R) ')
+    # Mode detection (map or chessboard)
+    if map_data['map_src'] is None and chessboard_data['chessboard_src'] is None:  # No reference points found
+        ans = input('No chessboard or map source points have been found; do you have a chessboard (C)\n'
+                    'or would you like to select these points directly from the map? (M) ')
         while True:
             if str(ans) == 'c' or 'C':
-                chessboard = True
+                chess_flag = True
                 break
-            elif str(ans) == 'r' or 'R':
+            elif str(ans) == 'm' or 'M':
+                map_flag = True
                 break
             else:
                 ans = input('Invalid input, try again:')
 
-    pts_dst_ini = f.get('General', 'pts_dst')  # Destination points (can be either automatically calculated or manually specified)
-    if pts_dst_ini == 'None':
-        pts_dst = None
+    elif isinstance(map_data['map_src'], np.ndarray) and chessboard_data['chessboard_src'] is None:  # Map reference points found
+        map_flag = True
+        print('Map reference points have been found.')
+        if isinstance(map_data['map_dst'], np.ndarray):
+            print('Map destination points have been found.')
+
+    elif isinstance(chessboard_data['chessboard_src'], np.ndarray) and map_data['map_src'] is None:  # Chessboard reference points found
+        chess_flag = True
+        print('Chessboard reference points have been found.')
+
+    elif isinstance(map_data['map_src'], np.ndarray) and isinstance(chessboard_data['chessboard_src'], np.ndarray):  # Both map and chessboard reference points found
+        ans = input('Both chessboard and map source points have been found;\n'
+                    'would you like to create the map using the chessboard corners (C)\n'
+                    'or the given map source points? (M) ')
+        while True:
+            if str(ans) == 'c' or 'C':
+                chess_flag = True
+                break
+            elif str(ans) == 'm' or 'M':
+                map_flag = True
+                break
+            else:
+                ans = input('Invalid input, try again:')
+
     else:
-        pts_dst = []
-        pts_dst_ini = pts_dst_ini.split('\n')
-        for i in range(0, len(pts_dst_ini)):
-            pts_dst.append([int(pts_dst_ini[i].split(' ')[0]), int(pts_dst_ini[i].split(' ')[1])])
-        pts_dst = np.array(pts_dst)
-        print('Destination points have been found.')
+        print('An error occurred while reading the ' + setup_file + ', exiting program.')
+        sys.exit(-1)
 
     print('')
 
-    min_distance = f.getfloat('General', 'min_distance') * 100
-
     if save is None:
-        save = f.get('System', 'default_save')  # Get the default save setting if it has not been specified in the command line arguments
-    max_attempts = f.getint('System', 'max_attempts')  # Maximum video reading attempts before quitting
+        save = system['default_save']
 
-    status = [[f.get('Status bar text', 'status_1'), tuple(map(int, f.get('Status bar colors', 'status_1_color').split(', '))), f.getint('Status bar text', 'status_1_offset'), f.getint('Status bar text', 'line_spacing_1')],
-              [f.get('Status bar text', 'status_2'), tuple(map(int, f.get('Status bar colors', 'status_2_color').split(', '))), f.getint('Status bar text', 'status_2_offset'), f.getint('Status bar text', 'line_spacing_2')],
-              [f.get('Status bar text', 'status_3'), tuple(map(int, f.get('Status bar colors', 'status_3_color').split(', '))), f.getint('Status bar text', 'status_3_offset'), f.getint('Status bar text', 'line_spacing_3')]
-              ]  # Overlay status text
+    status = [[status_bar_text['status_1'], status_bar_text['status_1_color'], status_bar_text['status_1_offset'], status_bar_text['line_spacing_1']],
+             [status_bar_text['status_2'], status_bar_text['status_2_color'], status_bar_text['status_2_offset'], status_bar_text['line_spacing_2']],
+             [status_bar_text['status_3'], status_bar_text['status_3_color'], status_bar_text['status_3_offset'], status_bar_text['line_spacing_3']]]  # Overlay status text
 
-    status_alt = [[f.get('Status bar text', 'status_1_alt'), tuple(map(int, f.get('Status bar colors', 'status_1_alt_color').split(', '))), f.getint('Status bar text', 'status_1_alt_offset'), f.getint('Status bar text', 'line_spacing_1_alt')],
-                  [f.get('Status bar text', 'status_2_alt'), tuple(map(int, f.get('Status bar colors', 'status_2_alt_color').split(', '))), f.getint('Status bar text', 'status_2_alt_offset'), f.getint('Status bar text', 'line_spacing_2_alt')],
-                  [f.get('Status bar text', 'status_3_alt'), tuple(map(int, f.get('Status bar colors', 'status_3_alt_color').split(', '))), f.getint('Status bar text', 'status_3_alt_offset'), f.getint('Status bar text', 'line_spacing_3_alt')]
-                  ]  # Overlay alternative status text
+    status_alt = [[status_bar_text['status_1_alt'], status_bar_text['status_1_color_alt'], status_bar_text['status_1_offset_alt'], status_bar_text['line_spacing_1_alt']],
+                  [status_bar_text['status_2_alt'], status_bar_text['status_2_color_alt'], status_bar_text['status_2_offset_alt'], status_bar_text['line_spacing_2_alt']],
+                  [status_bar_text['status_3_alt'], status_bar_text['status_3_color_alt'], status_bar_text['status_3_offset_alt'], status_bar_text['line_spacing_3_alt']]]  # Overlay alternative status text
 
     # Video stream loading
     cap = cv2.VideoCapture(src)  # 0 or -1 for default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
     attempt = 0
 
-    while not cap.isOpened() and attempt < max_attempts:  # Check that the capture has been initialized
+    while not cap.isOpened() and attempt < system['max_attempts']:  # Check that the capture has been initialized
         cap.open()
         attempt += 1
 
-    if not cap.isOpened() and attempt == max_attempts:  # Exit if the capture has not been initialized after a number of attempts
+    if not cap.isOpened() and attempt == system['max_attempts']:  # Exit if the capture has not been initialized after a number of attempts
         print('Could not open video stream. Exiting program...')
         sys.exit(-1)  # Exit program
 
@@ -89,14 +91,13 @@ def main(src, setup, save=None, dst_name=None):
             output_video = src[::-1].partition('.')[2].partition('/')[0][::-1] + '_output.avi'  # ...or just gets the input name and adds '_output.avi' at the end
 
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Defines the codec and creates a VideoWriter object
-        fps = f.getfloat('General', 'fps')  # Number of frames per second of the output video
 
-        out = cv2.VideoWriter(output_video, fourcc, fps, (int(cap.get(3)), int(cap.get(4))))
+        out = cv2.VideoWriter(output_video, fourcc, system['fps'], (int(cap.get(3)), int(cap.get(4))))
     else:
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, chessboard, pts_src, pts_dst, min_distance, [status, status_alt], out)
+    process, overlay_data, map_ratio = process_frame_first(cap, src, chess_flag, pts_src, pts_dst, system['min_distance'], [status, status_alt], out)
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -104,7 +105,7 @@ def main(src, setup, save=None, dst_name=None):
 
     # Video processing
     while process:
-        process = process_frame(cap, src, overlay_data, map_ratio, min_distance, [status, status_alt], out)
+        process = process_frame(cap, src, overlay_data, map_ratio, system['min_distance'], [status, status_alt], out)
 
     # Final operations
     cap.release()  # Release capture when finished
