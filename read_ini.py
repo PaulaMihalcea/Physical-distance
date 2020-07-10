@@ -2,6 +2,13 @@ import numpy as np
 from configparser import ConfigParser
 
 
+def process_color(color_ini):
+
+    color = tuple(map(int, color_ini.split(',')))
+
+    return color
+
+
 def process_points(points_ini):
 
     if points_ini == 'None':
@@ -14,13 +21,6 @@ def process_points(points_ini):
         points = np.array(points)
 
     return points
-
-
-def process_color(color_ini):
-
-    color = tuple(map(int, color_ini.split(',')))
-
-    return color
 
 
 def read_ini(ini_file):

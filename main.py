@@ -1,17 +1,26 @@
 import cv2
-import numpy as np
 import sys
+import inspect
+import numpy as np
 from read_ini import read_ini
 from process_frame import process_frame_first, process_frame
 
 
-def main(src, setup_file, save=None, dst_name=None):
+def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     print('')
     print('Welcome to the Physical Distance Detector!')
     print('')
 
-    # Setup
+    # Parameters
+    dst_name_parts = dst_name.split('.')
+    if len(dst_name_parts) == 1:
+        dst_name += '.avi'
+    elif dst_name_parts[len(dst_name_parts) - 1] != 'avi':
+        dst_name = ''
+        for i in range(0, len(dst_name_parts) - 1):
+            dst_name += str(dst_name_parts[i]) + '.'
+        dst_name += 'avi'
     system, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
     mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
 
@@ -66,14 +75,6 @@ def main(src, setup_file, save=None, dst_name=None):
     if save is None:
         save = system['default_save']
 
-    status_text = [[[status_bar_data['status_1'], status_bar_data['status_1_color'], status_bar_data['status_1_offset'], status_bar_data['line_spacing_1']],
-                    [status_bar_data['status_2'], status_bar_data['status_2_color'], status_bar_data['status_2_offset'], status_bar_data['line_spacing_2']],
-                    [status_bar_data['status_3'], status_bar_data['status_3_color'], status_bar_data['status_3_offset'], status_bar_data['line_spacing_3']]],
-
-                   [[status_bar_data['status_1_alt'], status_bar_data['status_1_color_alt'], status_bar_data['status_1_offset_alt'], status_bar_data['line_spacing_1_alt']],
-                    [status_bar_data['status_2_alt'], status_bar_data['status_2_color_alt'], status_bar_data['status_2_offset_alt'], status_bar_data['line_spacing_2_alt']],
-                    [status_bar_data['status_3_alt'], status_bar_data['status_3_color_alt'], status_bar_data['status_3_offset_alt'], status_bar_data['line_spacing_3_alt']]]]
-
     # Video stream loading
     cap = cv2.VideoCapture(src)  # 0 or -1 for default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
     attempt = 0
@@ -100,7 +101,7 @@ def main(src, setup_file, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, map_ratio = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, [status_bar_data, status_text], system['min_distance'])
+    process, map_ratio = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, system['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -108,7 +109,7 @@ def main(src, setup_file, save=None, dst_name=None):
 
     # Video processing
     while process:
-        process = process_frame(cap, src, out, overlay_data, [status_bar_data, status_text], system['min_distance'], map_ratio)
+        process = process_frame(cap, src, out, overlay_data, status_bar_data, system['min_distance'], map_ratio)
 
     # Final operations
     cap.release()  # Release capture when finished
@@ -124,7 +125,6 @@ def main(src, setup_file, save=None, dst_name=None):
     sys.exit(0)  # Exit program
 
 
-'''  # TODO aggiorna coi nuovi parametri
 if __name__ == '__main__':
     print(sys.argv)
     if len(sys.argv) == 2:
@@ -133,16 +133,22 @@ if __name__ == '__main__':
         main(str(sys.argv[1]), sys.argv[2])
     if len(sys.argv) == 4:
         main(str(sys.argv[1]), sys.argv[2], sys.argv[3])
+    if len(sys.argv) == 5:
+        main(str(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
+        sys.exit(-1)
+
 '''
 
 src = 'test/test_s.mp4'
 #src = 'test/test_c.mp4'
 #src = 'test/test_c_2.mp4'
-#chessboard = False
-save = False
-setup = 'setup_r.ini'
-setup = 'setup_c.ini'
-#setup = 'setup_c_2.ini'
-setup = 'setup.ini'
 
-main(src, setup, save, 'test_c_2_openpose.avi')
+setup = 'setup.ini'
+save = True
+dst_name = 'ciao.avi'
+
+
+main(src)
+'''

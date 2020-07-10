@@ -38,17 +38,15 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar, min_distance):
+def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, min_distance):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        status_bar_text = status_bar[1]
-
         get_points(frame, map_data, chessboard_data, mode)
 
-        generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode)  # Generate overlay
+        generate_overlay(frame, map_data, chessboard_data, status_bar_data, overlay_data, mode)  # Generate overlay
 
         if mode:
             map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions
@@ -67,9 +65,9 @@ def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_
 
         # Frame overlay
         if v is not None and len(v) > 0:
-            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[1])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_data, True)
         else:
-            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[0])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_data, False)
 
         # Save
         if out is not None:
@@ -93,13 +91,11 @@ def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_
     return True, map_ratio
 
 
-def process_frame(cap, src, out, overlay_data, status_bar, min_distance, map_ratio):
+def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, map_ratio):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:
-
-        status_bar_text = status_bar[1]
 
         # OpenPose image processing
         datum = op.Datum()
@@ -111,9 +107,9 @@ def process_frame(cap, src, out, overlay_data, status_bar, min_distance, map_rat
 
         # Frame overlay
         if v is not None and len(v) > 0:
-            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[1])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_data, True)
         else:
-            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[0])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_data, False)
 
         # Save
         if out is not None:
