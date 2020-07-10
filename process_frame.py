@@ -3,10 +3,9 @@ import cv2
 import sys
 import inspect
 import numpy as np
-from utils import get_points_mouse, get_points_chessboard
+from utils import get_points
 from overlay import generate_overlay, apply_overlay
 from transform_coords import transform_coords
-from get_dim import get_dim
 
 
 # OpenPose initialization
@@ -48,30 +47,16 @@ def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance,
         status_bar_text = status_bar[1]
 
         if mode:  # Map
-            if map_data['map_src'] is None:
-                map_data['map_src'], map_data['map_dst'], dst_dim = get_points_mouse(frame, map_data, mode)
-            elif map_data['map_src'] is not None:
-                # Get destination points
-                if map_data['map_dst'] is None:
-                    dst_width, dst_height = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
-                    map_data['map_dst'] = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-                else:
-                    dst_width, dst_height = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
-                    dst_width += 1  # TODO perché +=1?
-                    dst_height += 1
-                dst_dim = (dst_width, dst_height)
+            dst_dim = get_points(frame, map_data, chessboard_data, mode)
 
         elif not mode:  # Chessboard
-            if chessboard_data['chessboard_src'] is None:
-                chessboard_data['chessboard_src'], chessboard_data['pts_dst'], dst_dim = get_points_chessboard(frame, chessboard_data['chessboard_src'], mode)
-            else:
-                _, chessboard_data['pts_dst'], dst_dim = get_points_chessboard(frame, chessboard_data['chessboard_src'], mode)
+            dst_dim = get_points(frame, map_data, chessboard_data, mode)  # Calculate dimensions of destination image
 
         else:  # Shouldn't even get to this point, but whatever
             print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
             sys.exit(-1)
 
-        overlay_new_data = generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode, dst_dim)  # Generate overlay  # TODO dst_dim potrebbe causare problemi in alcuni casi
+        overlay_new_data = generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode, dst_dim)  # Generate overlay
 
         if mode:
             map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions

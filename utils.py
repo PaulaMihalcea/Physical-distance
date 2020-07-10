@@ -1,8 +1,7 @@
 import cv2
 import sys
+import inspect
 import numpy as np
-from configparser import ConfigParser
-from get_dim import get_dim
 
 
 def is_int(n):
@@ -11,92 +10,6 @@ def is_int(n):
         return n
     except ValueError:
         return None
-
-
-def get_points_mouse(img_src, map_data, mode):
-
-    # Variables
-    pts_dst = map_data['map_dst']
-    ratio = map_data['ratio']
-
-    pts_src = None  # Source points
-    img_src_b = img_src.copy()  # Image with border
-
-    # Get points by click
-    while True:  # Wait for four valid source points
-
-        print('Click on the four corners of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
-              'or press SPACEBAR to add or change borders.\n'
-              'Otherwise, press ESC to exit.')
-        print('')
-
-        pts_src = get_pts(img_src_b)
-
-        if pts_src is not None:  # Exit source points loop if four valid points have been returned
-            break
-        else:
-            border = [None] * 4  # Border thickness
-            while True:
-                border[0] = is_int(input('Insert left border thickness in pixels: '))
-                if border[0] is None or border[0] < 0:
-                    print('Invalid input.')
-                else:
-                    break
-            while True:
-                border[1] = is_int(input('Insert top border thickness in pixels: '))
-                if border[1] is None or border[1] < 0:
-                    print('Invalid input.')
-                else:
-                    break
-            while True:
-                border[2] = is_int(input('Insert right border thickness in pixels: '))
-                if border[2] is None or border[2] < 0:
-                    print('Invalid input.')
-                else:
-                    break
-            while True:
-                border[3] = is_int(input('Insert bottom border thickness in pixels: '))
-                if border[3] is None or border[3] < 0:
-                    print('Invalid input.')
-                else:
-                    break
-
-            print('')
-            img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
-
-    # Get destination points
-    if pts_dst is None:
-        dst_width, dst_height = get_dim(pts_src, mode, ratio)  # Calculate dimensions of destination image
-        pts_dst = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-    else:
-        dst_width, dst_height = get_dim(pts_dst, mode, ratio)  # Calculate dimensions of destination image
-        dst_width += 1
-        dst_height += 1
-
-    map_data['map_src'] = pts_src
-    map_data['map_dst'] = pts_dst
-
-    return pts_src, pts_dst, (dst_width, dst_height)
-
-
-def get_points_chessboard(img_src, pts_src_chessboard, mode):
-
-    img_src_b = img_src.copy()  # Image with border
-
-    # Get points by click
-    if pts_src_chessboard is None:
-        print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
-          'Otherwise, press ESC to exit.')
-        print('')
-
-        pts_src_chessboard = get_pts_no_borders(img_src_b)
-
-    # Get destination points
-    pts_dst_chessboard = get_dim(pts_src_chessboard, mode)
-    dst_width, dst_height = get_dim(pts_src_chessboard, mode)  # Calculate dimensions of destination image
-    pts_dst_chessboard = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-
-    return pts_src_chessboard, pts_dst_chessboard, (dst_width, dst_height)
 
 
 def get_color(n):  # Choose a color based on the number of the point that is about to be drawn
@@ -126,9 +39,9 @@ def mouse_handler(event, x, y, flags, data):
         data['pts'].append([x, y])  # Append the acquired point to the points array
 
 
-def get_pts(im):
+def get_pts(img, borders):
 
-    data = {'img': im.copy(),  # Use a copy of the original image during the points' acquisition
+    data = {'img': img.copy(),  # Use a copy of the original image during the points' acquisition
             'pts': []}  # Array of points
     cv2.imshow('Choose points...', data['img'])  # Show the image to choose points on
 
@@ -140,7 +53,7 @@ def get_pts(im):
         if k == 13 and len(data['pts']) == 4:  # ENTER is pressed and all four points have been acquired
             cv2.destroyAllWindows()  # Close the choosing points window and return
             break
-        if k == 32:  # SPACEBAR
+        if borders and k == 32:  # SPACEBAR
             cv2.destroyAllWindows()  # Close the choosing points window and return the necessary flags to begin a new operation
             return None
         if k == 27:  # ESC
@@ -151,31 +64,117 @@ def get_pts(im):
             print('')
 
     pts = np.vstack(data['pts']).astype(float)  # Convert points array to a numpy array
-    
+
     return pts
 
 
-def get_pts_no_borders(im):
+def get_dim(pts, mode, ratio=1):
+    x = []  # x coordinates of all points
+    y = []  # y coordinates of all points
 
-    data = {'img': im.copy(),  # Use a copy of the original image during the points' acquisition
-            'pts': []}  # Array of points
-    cv2.imshow('Choose points...', data['img'])  # Show the image to choose points on
+    for i in range(0, len(pts)):
+        x.append(pts[i][0])
+        y.append(pts[i][1])
 
-    while True:
+    if mode:  # Map
+        if ratio > 0:
+            dst_width = int(max(x) - min(x))
+            dst_height = int(int(max(y) - min(y)) * ratio)
+        elif ratio < 0:
+            dst_width = int(int(max(x) - min(x)) * ratio)
+            dst_height = int(max(y) - min(y))
+        else:
+            print('Invalid map ratio given to the ' + inspect.stack()[0][3] + ' function, exiting program.')
+            sys.exit(-1)
 
-        cv2.setMouseCallback('Choose points...', mouse_handler, data)  # Set the callback function for any mouse event
-        k = cv2.waitKey(0)  # Get whatever key the user presses on keyboard
+    elif not mode:  # Chessboard
+        dst_width = int(max(x) - min(x))
+        dst_height = int(max(y) - min(y))
 
-        if k == 13 and len(data['pts']) == 4:  # ENTER is pressed and all four points have been acquired
-            cv2.destroyAllWindows()  # Close the choosing points window and return
-            break
-        if k == 27:  # ESC
-            print('Exiting program...')
-            sys.exit()  # Exit program
-        else:  # Any other key
-            print('Invalid key or not enough points selected (points left: ' + str(4 - len(data['pts'])) + '). Press ENTER to continue.')
+        if dst_width > dst_height:
+            dst_height = dst_width
+        elif dst_height > dst_width:
+            dst_width = dst_height
+
+        dst_width -= 1
+        dst_height -= 1
+
+    else:  # Shouldn't even get to this point, but whatever
+        print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
+        sys.exit(-1)
+
+    return dst_width, dst_height
+
+
+def get_points(img_src, map_data, chessboard_data, mode):
+
+    if mode:  # Map
+        if map_data['map_src'] is None:  # No map source points found
+            img_src_b = img_src.copy()  # Image with border
+
+            # Get points by click
+            while True:  # Wait for four valid source points
+
+                print('Click on the four corners of the floor plane (top left, top right, bottom right, bottom left) then press ENTER,\n'
+                      'or press SPACEBAR to add or change borders.\n'
+                      'Otherwise, press ESC to exit.')
+                print('')
+
+                map_data['map_src'] = get_pts(img_src_b, mode)
+
+                if map_data['map_src'] is not None:  # Exit source points loop if four valid points have been returned
+                    break
+                else:
+                    border = [None] * 4  # Border thickness
+                    while True:
+                        border[0] = is_int(input('Insert left border thickness in pixels: '))
+                        if border[0] is None or border[0] < 0:
+                            print('Invalid input.')
+                        else:
+                            break
+                    while True:
+                        border[1] = is_int(input('Insert top border thickness in pixels: '))
+                        if border[1] is None or border[1] < 0:
+                            print('Invalid input.')
+                        else:
+                            break
+                    while True:
+                        border[2] = is_int(input('Insert right border thickness in pixels: '))
+                        if border[2] is None or border[2] < 0:
+                            print('Invalid input.')
+                        else:
+                            break
+                    while True:
+                        border[3] = is_int(input('Insert bottom border thickness in pixels: '))
+                        if border[3] is None or border[3] < 0:
+                            print('Invalid input.')
+                        else:
+                            break
+
+                    print('')
+                    img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
+
+        # Get destination points
+        if map_data['map_dst'] is None:
+            dst_dim = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+            dst_width = dst_dim[0]
+            dst_height = dst_dim[1]
+            map_data['map_dst'] = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
+        else:
+            dst_dim = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+
+    elif not mode:  # Chessboard
+        if chessboard_data['chessboard_src'] is None:
+            print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
+                  'Otherwise, press ESC to exit.')
             print('')
 
-    pts = np.vstack(data['pts']).astype(float)  # Convert points array to a numpy array
+            chessboard_data['chessboard_src'] = get_pts(img_src, mode)
 
-    return pts
+        dst_dim = get_dim(chessboard_data['chessboard_src'], mode)
+
+    else:  # Shouldn't even get to this point, but whatever
+        print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
+        sys.exit(-1)
+
+    return dst_dim

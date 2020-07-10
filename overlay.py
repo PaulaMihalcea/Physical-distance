@@ -1,7 +1,6 @@
 import cv2
 import sys
-import numpy as np
-from warp import warp, warp_c
+from warp import warp
 from adjust_position import adjust_position
 
 
@@ -34,7 +33,7 @@ def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mo
         sys.exit(-1)
 
     # Source image generation
-    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, dst_dim, mode, chessboard_data)  # Generate overlay source image
+    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, chessboard_data, mode, dst_dim)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 

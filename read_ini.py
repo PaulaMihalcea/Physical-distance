@@ -39,8 +39,8 @@ def read_ini(ini_file):
         'map_width': f.getfloat('Map', 'map_width') * 100,
         'map_height': f.getfloat('Map', 'map_height') * 100,
         'ratio': f.getfloat('Map', 'ratio'),
-        'map_src': process_points(f.get('Map', 'map_src')),
-        'map_dst': process_points(f.get('Map', 'map_dst'))
+        'map_src': process_points(f.get('Map', 'map_src')),  # Source points
+        'map_dst': process_points(f.get('Map', 'map_dst'))  # Destination points
     }
 
     chessboard_data = {
