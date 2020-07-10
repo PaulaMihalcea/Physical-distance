@@ -154,15 +154,6 @@ def get_points(img_src, map_data, chessboard_data, mode):
                     print('')
                     img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
 
-        # Get destination points
-        if map_data['map_dst'] is None:
-            dst_dim = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
-            dst_width = dst_dim[0]
-            dst_height = dst_dim[1]
-            map_data['map_dst'] = np.array([[0, 0], [dst_width - 1, 0], [dst_width - 1, dst_height - 1], [0, dst_height - 1]])  # Set destination points
-        else:
-            dst_dim = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
-
     elif not mode:  # Chessboard
         if chessboard_data['chessboard_src'] is None:
             print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
@@ -171,10 +162,8 @@ def get_points(img_src, map_data, chessboard_data, mode):
 
             chessboard_data['chessboard_src'] = get_pts(img_src, mode)
 
-        dst_dim = get_dim(chessboard_data['chessboard_src'], mode)
-
     else:  # Shouldn't even get to this point, but whatever
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)
 
-    return dst_dim
+    return

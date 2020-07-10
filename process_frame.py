@@ -38,7 +38,7 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance, status_bar, overlay_data, out):
+def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar, min_distance):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
@@ -46,24 +46,16 @@ def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance,
 
         status_bar_text = status_bar[1]
 
-        if mode:  # Map
-            dst_dim = get_points(frame, map_data, chessboard_data, mode)
+        get_points(frame, map_data, chessboard_data, mode)
 
-        elif not mode:  # Chessboard
-            dst_dim = get_points(frame, map_data, chessboard_data, mode)  # Calculate dimensions of destination image
-
-        else:  # Shouldn't even get to this point, but whatever
-            print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
-            sys.exit(-1)
-
-        overlay_new_data = generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode, dst_dim)  # Generate overlay
+        generate_overlay(frame, map_data, chessboard_data, status_bar[0], overlay_data, mode)  # Generate overlay
 
         if mode:
             map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions
-            map_ratio = [map_dim[0] / overlay_new_data['overlay_dim'][0], map_dim[1] / overlay_new_data['overlay_dim'][1]]
+            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
         elif not mode:
-            map_dim = overlay_new_data['map_dim']
-            map_ratio = [map_dim[0] / overlay_new_data['overlay_dim'][0], map_dim[1] / overlay_new_data['overlay_dim'][1]]
+            map_dim = overlay_data['map_dim']
+            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
 
         # OpenPose image processing
         datum = op.Datum()
@@ -71,13 +63,13 @@ def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance,
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v = transform_coords(datum.poseKeypoints, overlay_new_data['h'], overlay_new_data['width_height_ratio'], map_ratio, min_distance, overlay_new_data['warp_offset'])
+        people, v = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])
 
         # Frame overlay
         if v is not None and len(v) > 0:
-            frame = apply_overlay(frame, overlay_new_data, [people, v], status_bar_text[1])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[1])
         else:
-            frame = apply_overlay(frame, overlay_new_data, [people, v], status_bar_text[0])
+            frame = apply_overlay(frame, overlay_data, [people, v], status_bar_text[0])
 
         # Save
         if out is not None:
@@ -98,10 +90,11 @@ def process_frame_first(cap, src, mode, map_data, chessboard_data, min_distance,
     else:
         return False
 
-    return True, overlay_new_data, map_ratio
+    return True, map_ratio
 
 
-def process_frame(cap, src, overlay_data, map_ratio, min_distance, status_bar, out):
+def process_frame(cap, src, out, overlay_data, status_bar, min_distance, map_ratio):
+
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
     if frame is not None:

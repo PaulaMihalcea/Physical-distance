@@ -4,23 +4,11 @@ from warp import warp
 from adjust_position import adjust_position
 
 
-def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mode, dst_dim=[]):
-
-    pts_src = map_data['map_src']
-    pts_dst = map_data['map_dst']
-    chessboard_src = chessboard_data['chessboard_src']
+def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay_data, mode):
 
     # Setup
-    status_bar_min_width = overlay['status_bar_min_width']
-    status_bar_min_height = overlay['status_bar_min_height']
-
-    overlay_max_width = img_dst.shape[1] - status_bar_min_width  # Maximum overlay width (status bar dependent)
-    overlay_max_height = int(img_dst.shape[0] / 100 * overlay['overlay_max_height'])  # Maximum overlay height (percentage (!) of frame height)
-
-    hor_offset = overlay['hor_offset']
-    ver_offset = overlay['ver_offset']
-
-    position_tolerance = overlay['position_tolerance']
+    overlay_max_width = img_dst.shape[1] - overlay_data['status_bar_min_width']  # Maximum overlay width (status bar dependent)
+    overlay_max_height = int(img_dst.shape[0] / 100 * overlay_data['overlay_max_height'])  # Maximum overlay height (percentage (!) of frame height)
 
     overlay_colors = {
         'status_bar_background': status_bar['status_bar_background'],
@@ -28,18 +16,18 @@ def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mo
         'overlay_right_bottom_border': status_bar['overlay_right_bottom_border']
     }
 
-    if overlay['overlay_position'] != 0 and overlay['overlay_position'] != 1 and overlay['overlay_position'] != 2 and overlay['overlay_position'] != 3:  # Check overlay position validity
+    if overlay_data['overlay_position'] != 0 and overlay_data['overlay_position'] != 1 and overlay_data['overlay_position'] != 2 and overlay_data['overlay_position'] != 3:  # Check overlay position validity
         print('Invalid overlay position.')
         sys.exit(-1)
 
     # Source image generation
-    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, chessboard_data, mode, dst_dim)  # Generate overlay source image
+    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, chessboard_data, mode)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 
     # Overlay size check
-    if img_src.shape[1] + overlay['border_thickness'] * 2 > overlay_max_width:  # Check if overlay width is too large
-        new_width = overlay_max_width - overlay['border_thickness'] * 2
+    if img_src.shape[1] + overlay_data['border_thickness'] * 2 > overlay_max_width:  # Check if overlay width is too large
+        new_width = overlay_max_width - overlay_data['border_thickness'] * 2
         new_height = int(overlay_max_width / img_src.shape[1] * img_src.shape[0])
         if new_width == 0:
             new_width = 1
@@ -47,7 +35,7 @@ def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mo
             new_height = 1
         img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
 
-    if img_src.shape[0] + overlay['border_thickness'] * 2 > overlay_max_height:  # Check if overlay height is too large
+    if img_src.shape[0] + overlay_data['border_thickness'] * 2 > overlay_max_height:  # Check if overlay height is too large
         new_height = overlay_max_height
         new_width = int(overlay_max_height / img_src.shape[0] * img_src.shape[1])
         if new_width == 0:
@@ -57,64 +45,62 @@ def generate_overlay(img_dst, map_data, chessboard_data, status_bar, overlay, mo
         img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
 
     # Overlay background
-    if img_src.shape[0] < status_bar_min_height:  # Add empty background to overlay if it's too small with respect to the status bar
-        offset = int((status_bar_min_height - (img_src.shape[0] + overlay['border_thickness'] * 2 - 2)) / 2) - 1
+    if img_src.shape[0] < overlay_data['status_bar_min_height']:  # Add empty background to overlay if it's too small with respect to the status bar
+        offset = int((overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 2)) / 2) - 1
         if offset < 0:
             offset = 0
-        if (status_bar_min_height - (img_src.shape[0] + overlay['border_thickness'] * 2 - 1)) % 2 == 0:
+        if (overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 1)) % 2 == 0:
             img_src = cv2.copyMakeBorder(img_src, offset + 1, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
         else:
             img_src = cv2.copyMakeBorder(img_src, offset, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=overlay_colors['status_bar_background'])
-        ver_offset += int(offset / 2)
+        overlay_data['ver_offset'] += int(offset / 2)
     else:
         offset = 0
 
     # Overlay border creation
-    img_src = cv2.copyMakeBorder(img_src, overlay['border_thickness'], 0, overlay['border_thickness'], 0, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_left_top_border'])
-    img_src = cv2.copyMakeBorder(img_src, 0, overlay['border_thickness'], 0, overlay['border_thickness'], cv2.BORDER_CONSTANT, value=overlay_colors['overlay_right_bottom_border'])
+    img_src = cv2.copyMakeBorder(img_src, overlay_data['border_thickness'], 0, overlay_data['border_thickness'], 0, cv2.BORDER_CONSTANT, value=overlay_colors['overlay_left_top_border'])
+    img_src = cv2.copyMakeBorder(img_src, 0, overlay_data['border_thickness'], 0, overlay_data['border_thickness'], cv2.BORDER_CONSTANT, value=overlay_colors['overlay_right_bottom_border'])
 
     overlay_width = img_src.shape[1]
     overlay_height = img_src.shape[0]
 
     # Overlay position
     corners = []
-    if overlay['overlay_position'] == 0:  # Top left
+    if overlay_data['overlay_position'] == 0:  # Top left
         start_point = [0, 0]
         end_point = [overlay_width, overlay_height]
-        corners.extend([(end_point[0], 0), (img_dst.shape[1] - 1, 0), (img_dst.shape[1] - 1, status_bar_min_height), (end_point[0], status_bar_min_height)])
-    elif overlay['overlay_position'] == 1:  # Top right
+        corners.extend([(end_point[0], 0), (img_dst.shape[1] - 1, 0), (img_dst.shape[1] - 1, overlay_data['status_bar_min_height']), (end_point[0], overlay_data['status_bar_min_height'])])
+    elif overlay_data['overlay_position'] == 1:  # Top right
         start_point = [img_dst.shape[1] - overlay_width, 0]
         end_point = [img_dst.shape[1], overlay_height]
-        corners.extend([(0, 0), (start_point[0] - 1, 0), (start_point[0] - 1, status_bar_min_height), (0, status_bar_min_height)])
-    elif overlay['overlay_position'] == 2:  # Bottom right
+        corners.extend([(0, 0), (start_point[0] - 1, 0), (start_point[0] - 1, overlay_data['status_bar_min_height']), (0, overlay_data['status_bar_min_height'])])
+    elif overlay_data['overlay_position'] == 2:  # Bottom right
         start_point = [img_dst.shape[1] - overlay_width, img_dst.shape[0] - overlay_height]
         end_point = [img_dst.shape[1], img_dst.shape[0]]
-        corners.extend([(0, start_point[1] - status_bar_min_height + overlay_height - 1), (start_point[0] - 1, start_point[1] - status_bar_min_height + overlay_height - 1), (start_point[0] - 1, img_dst.shape[0] - 1), (0, img_dst.shape[0] - 1)])
-    elif overlay['overlay_position'] == 3:  # Bottom left
+        corners.extend([(0, start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (start_point[0] - 1, start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (start_point[0] - 1, img_dst.shape[0] - 1), (0, img_dst.shape[0] - 1)])
+    elif overlay_data['overlay_position'] == 3:  # Bottom left
         start_point = (0, img_dst.shape[0] - overlay_height)
         end_point = (overlay_width, img_dst.shape[0])
-        corners.extend([(end_point[0], start_point[1] - status_bar_min_height + overlay_height - 1), (img_dst.shape[1] - 1, start_point[1] - status_bar_min_height + overlay_height - 1), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
+        corners.extend([(end_point[0], start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (img_dst.shape[1] - 1, start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
 
     width_ratio = src_width / img_src.shape[1]
     height_ratio = src_height / img_src.shape[0]
 
-    overlay_data = {'img_src': img_src,
-                    'overlay_position': overlay['overlay_position'],
-                    'overlay_dim': [overlay_width, overlay_height],
-                    'overlay_colors': overlay_colors,
-                    'start_end_points': [start_point, end_point],
-                    'corners': corners,
-                    'h': h,
-                    'width_height_ratio': [width_ratio, height_ratio],
-                    'offset': [hor_offset, ver_offset],
-                    'border_thickness': overlay['border_thickness'],
-                    'map_offset': offset,
-                    'position_tolerance': position_tolerance,
-                    'warp_offset': warp_offset,
-                    'map_dim': map_dim
-                    }
+    overlay_additional_data = {'img_src': img_src,
+                               'overlay_dim': [overlay_width, overlay_height],
+                               'overlay_colors': overlay_colors,
+                               'start_end_points': [start_point, end_point],
+                               'corners': corners,
+                               'h': h,
+                               'width_height_ratio': [width_ratio, height_ratio],
+                               'map_offset': offset,
+                               'warp_offset': warp_offset,
+                               'map_dim': map_dim
+                               }
 
-    return overlay_data
+    overlay_data.update(overlay_additional_data)
+
+    return
 
 
 def apply_overlay(img_dst, overlay_data, people, status_bar_data=[]):
@@ -128,8 +114,8 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data=[]):
     start_point = overlay_data['start_end_points'][0]
     end_point = overlay_data['start_end_points'][1]
     corners = overlay_data['corners']
-    hor_offset = overlay_data['offset'][0]
-    ver_offset = overlay_data['offset'][1]
+    hor_offset = overlay_data['hor_offset']
+    ver_offset = overlay_data['ver_offset']
     map_offset = overlay_data['map_offset']
     position_tolerance = overlay_data['position_tolerance']
 

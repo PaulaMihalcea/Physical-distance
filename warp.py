@@ -6,19 +6,21 @@ from screeninfo import get_monitors
 from utils import get_dim
 
 
-def warp(img_src, map_data, chessboard_data, mode, dst_dim, show=False):
-
-    # TODO sposta il calcolo di dst_dim qui dentro
+def warp(img_src, map_data, chessboard_data, mode, show=False):
 
     if mode:
+        # Get destination points
+        if map_data['map_dst'] is None:
+            dst_dim = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+
+            map_data['map_dst'] = np.array([[0, 0], [dst_dim[0] - 1, 0], [dst_dim[0] - 1, dst_dim[0] - 1], [0, dst_dim[0] - 1]])  # Set destination points
+        else:
+            dst_dim = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
 
         # Warp
-        dst_width = dst_dim[0]  # TODO rimuovi (anche dalla signature)
-        dst_height = dst_dim[1]  # TODO rimuovi (anche dalla signature)
-
         h, _ = cv2.findHomography(map_data['map_src'], map_data['map_dst'])  # Calculate homography
 
-        img_dst = cv2.warpPerspective(img_src, h, (dst_width, dst_height))  # Warp source image based on homography
+        img_dst = cv2.warpPerspective(img_src, h, (dst_dim[0], dst_dim[1]))  # Warp source image based on homography
 
     elif not mode:
 
@@ -106,5 +108,6 @@ def warp(img_src, map_data, chessboard_data, mode, dst_dim, show=False):
 
     if mode:
         return img_dst, h, None, None
+
     elif not mode:
         return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + chessboard_length_cm, roi_y_cm * 2 + chessboard_length_cm)

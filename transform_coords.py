@@ -18,7 +18,6 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
         warp_offset = [0, 0]
 
     if points is not None and len(points) > 1:
-
         for i in range(0, len(points)):
             p = cv2.perspectiveTransform(np.array([[[points[i][0], points[i][1]]]], dtype='float32'), h).astype('int')
             points[i][0] = int((p[0][0][0] - warp_offset[0]) / warp_overlay_ratio[0])
@@ -41,6 +40,3 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
         distances = None
 
     return points, distances
-
-
-# TODO: cambia il ciclo for con un'unica istruzione

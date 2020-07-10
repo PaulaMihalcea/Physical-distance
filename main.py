@@ -12,7 +12,7 @@ def main(src, setup_file, save=None, dst_name=None):
     print('')
 
     # Setup
-    system, map_data, chessboard_data, overlay, status_bar_data = read_ini(setup_file)
+    system, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
     mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
 
     # Mode detection (map or chessboard)
@@ -100,7 +100,7 @@ def main(src, setup_file, save=None, dst_name=None):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, overlay_data, map_ratio = process_frame_first(cap, src, mode, map_data, chessboard_data, system['min_distance'], [status_bar_data, status_text], overlay, out)
+    process, map_ratio = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, [status_bar_data, status_text], system['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -108,7 +108,7 @@ def main(src, setup_file, save=None, dst_name=None):
 
     # Video processing
     while process:
-        process = process_frame(cap, src, overlay_data, map_ratio, system['min_distance'], [status_bar_data, status_text], out)
+        process = process_frame(cap, src, out, overlay_data, [status_bar_data, status_text], system['min_distance'], map_ratio)
 
     # Final operations
     cap.release()  # Release capture when finished
