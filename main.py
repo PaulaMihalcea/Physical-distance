@@ -13,14 +13,15 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     print('')
 
     # Parameters
-    dst_name_parts = dst_name.split('.')
-    if len(dst_name_parts) == 1:
-        dst_name += '.avi'
-    elif dst_name_parts[len(dst_name_parts) - 1] != 'avi':
-        dst_name = ''
-        for i in range(0, len(dst_name_parts) - 1):
-            dst_name += str(dst_name_parts[i]) + '.'
-        dst_name += 'avi'
+    if dst_name is not None:
+        dst_name_parts = dst_name.split('.')
+        if len(dst_name_parts) == 1:
+            dst_name += '.avi'
+        elif dst_name_parts[len(dst_name_parts) - 1] != 'avi':
+            dst_name = ''
+            for i in range(0, len(dst_name_parts) - 1):
+                dst_name += str(dst_name_parts[i]) + '.'
+            dst_name += 'avi'
     system, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
     mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
 
