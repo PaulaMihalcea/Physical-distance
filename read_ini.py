@@ -32,7 +32,8 @@ def read_ini(ini_file):
         'min_distance': f.getfloat('System', 'min_distance') * 100,
         'default_save': f.getboolean('System', 'default_save'),  # Get the default save setting if it has not been specified in the command line arguments
         'fps': f.getfloat('System', 'fps'),  # Number of frames per second of the output video
-        'max_attempts': f.getint('System', 'max_attempts')  # Maximum video reading attempts before quitting
+        'max_attempts': f.getint('System', 'max_attempts'),  # Maximum video reading attempts before quitting
+        'position_alpha': f.getfloat('System', 'position_alpha')
     }
 
     map_data = {

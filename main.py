@@ -22,7 +22,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
             for i in range(0, len(dst_name_parts) - 1):
                 dst_name += str(dst_name_parts[i]) + '.'
             dst_name += 'avi'
-    system, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
+    system_data, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
     mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
 
     # Mode detection (map or chessboard)
@@ -74,17 +74,17 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     # Parameters
     if save is None:
-        save = system['default_save']
+        save = system_data['default_save']
 
     # Video stream loading
     cap = cv2.VideoCapture(src)  # 0 or -1 for default camera, 1 for next one and so on; passing a string containing a path/filename opens an external video file
     attempt = 0
 
-    while not cap.isOpened() and attempt < system['max_attempts']:  # Check that the capture has been initialized
+    while not cap.isOpened() and attempt < system_data['max_attempts']:  # Check that the capture has been initialized
         cap.open()
         attempt += 1
 
-    if not cap.isOpened() and attempt == system['max_attempts']:  # Exit if the capture has not been initialized after a number of attempts
+    if not cap.isOpened() and attempt == system_data['max_attempts']:  # Exit if the capture has not been initialized after a number of attempts
         print('Could not open video stream. Exiting program...')
         sys.exit(-1)  # Exit program
 
@@ -97,12 +97,12 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Defines the codec and creates a VideoWriter object
 
-        out = cv2.VideoWriter(output_video, fourcc, system['fps'], (int(cap.get(3)), int(cap.get(4))))
+        out = cv2.VideoWriter(output_video, fourcc, system_data['fps'], (int(cap.get(3)), int(cap.get(4))))
     else:
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, map_ratio = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, system['min_distance'])
+    process, map_ratio, points_p = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, system_data['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')
@@ -110,7 +110,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     # Video processing
     while process:
-        process = process_frame(cap, src, out, overlay_data, status_bar_data, system['min_distance'], map_ratio)
+        process, points_p = process_frame(cap, src, out, overlay_data, status_bar_data, system_data['min_distance'], map_ratio, system_data['position_alpha'], points_p)
 
     # Final operations
     cap.release()  # Release capture when finished
@@ -125,9 +125,8 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     print('Exiting program...')
     sys.exit(0)  # Exit program
 
-
+'''
 if __name__ == '__main__':
-    print(sys.argv)
     if len(sys.argv) == 2:
         main(str(sys.argv[1]))
     if len(sys.argv) == 3:
@@ -152,4 +151,4 @@ dst_name = 'ciao.avi'
 
 
 main(src)
-'''
+#'''

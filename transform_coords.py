@@ -3,7 +3,7 @@ import numpy as np
 from get_distance import get_distance
 
 
-def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distance, warp_offset):
+def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distance, warp_offset, alpha=None, points_p=None):
 
     if op_keypoints.shape:
         points = np.zeros((op_keypoints.shape[0], 2))
@@ -11,6 +11,7 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
         for i in range(0, op_keypoints.shape[0]):
             points[i][0] = (op_keypoints[i][21][0] + op_keypoints[i][24][0]) / 2
             points[i][1] = (op_keypoints[i][21][1] + op_keypoints[i][24][1]) / 2
+
     else:
         points = None
 
@@ -39,4 +40,12 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
         points = None
         distances = None
 
-    return points, distances
+    if (points is not None) and (points_p is not None) and (len(points) == len(points_p)):
+        for i in range(0, len(points)):
+            points[i][0] = points[i][0] * alpha + points_p[i][0] * (1 - alpha)
+            points[i][1] = points[i][1] * alpha + points_p[i][1] * (1 - alpha)
+
+    if points is not None:
+        points_p = points.copy()
+
+    return points, distances, points_p
