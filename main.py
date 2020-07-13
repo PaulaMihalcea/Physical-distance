@@ -125,7 +125,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     print('Exiting program...')
     sys.exit(0)  # Exit program
 
-'''
+
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         main(str(sys.argv[1]))
@@ -138,17 +138,3 @@ if __name__ == '__main__':
     else:
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)
-
-'''
-
-src = 'test/test_s.mp4'
-#src = 'test/test_c.mp4'
-#src = 'test/test_c_2.mp4'
-
-setup = 'setup.ini'
-save = True
-dst_name = 'ciao.avi'
-
-
-main(src)
-#'''

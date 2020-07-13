@@ -83,10 +83,10 @@ def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_
         cv2.imshow(window_name, frame)
         k = cv2.waitKey(33)
         if k == 27:
-            return False
+            return False, None
 
     else:
-        return False
+        return False, None
 
     return True, map_ratio, points_p
 
@@ -125,9 +125,9 @@ def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, ma
         cv2.imshow(window_name, frame)
         k = cv2.waitKey(33)
         if k == 27:
-            return False
+            return False, None
 
     else:
-        return False
+        return False, None
 
     return True, points_p
