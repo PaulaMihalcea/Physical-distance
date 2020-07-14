@@ -138,3 +138,7 @@ if __name__ == '__main__':
     else:
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)
+
+
+# TODO: Salva le coordinate inserite a mano nel file INI
+# TODO: Aggiungi la possibilità di avere un tappetino rettangolare invece che quadrato
