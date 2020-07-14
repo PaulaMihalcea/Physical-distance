@@ -135,10 +135,6 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data, alt):
         people[0] = adjust_position(people[0], (add_x, add_y), dim_x, dim_y, overlay_data['position_tolerance'])
 
     if people[0] is not None and len(people[0]) > 1:
-        # People positions (single color version)
-        for k in range(0, len(people[0])):
-            img_dst = cv2.circle(img_dst, (people[0][k][0], people[0][k][1]), 1, (0, 255, 255, 255), -1)
-
         # People positions (multi color version)
         v = people[1]  # People that do not respect minimum distance
         for k in range(0, len(people[0])):
