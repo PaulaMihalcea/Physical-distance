@@ -31,7 +31,7 @@ def warp(img_src, map_data, mat_data, mode, show=False):
 
         mat_src = mat_data['mat_src']
 
-        # mat length in pixels
+        # Mat dimensions in pixels
         mat_length_px = get_dim(mat_src, mode)[0]
 
         mat_dst = np.array([[0, 0], [mat_length_px, 0], [mat_length_px, mat_length_px], [0, mat_length_px]])

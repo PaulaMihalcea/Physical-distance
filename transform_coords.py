@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from get_distance import get_distance
 
 
 def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distance, warp_offset, alpha=None, points_p=None):
@@ -49,6 +48,33 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
         points_p = points.copy()
 
     return points, distances, points_p
+
+
+def get_dista   nce(points, min_distance, map_ratio=1):
+
+    if isinstance(map_ratio, str) or map_ratio is None:
+        map_ratio = 1
+
+    points = np.asmatrix(points, dtype='float64')
+    points[:, 0] *= map_ratio[0]
+    points[:, 1] *= map_ratio[1]
+
+    distances = np.zeros((len(points), len(points)))
+
+    for i in range(0, len(points)):
+        for j in range(0, len(points)):
+            distances[i][j] = np.linalg.norm(points[i] - points[j])
+
+    v = []
+
+    for i in range(0, len(distances)):
+        for j in range(i + 1, len(distances)):
+            if distances[i][j] < min_distance:
+                v.append([i, j])
+    if v:
+        v = set(map(int, str(v).replace('[', ''). replace(']', '').split(', ')))
+
+    return v
 
 
 def adjust_position(points, add, dim_x, dim_y, tolerance):
