@@ -44,12 +44,12 @@ def read_ini(ini_file):
         'map_dst': process_points(f.get('Map', 'map_dst'))  # Destination points
     }
 
-    chessboard_data = {
-        'chessboard_length': f.getfloat('Chessboard', 'chessboard_length'),
-        'roi_x': f.getfloat('Chessboard', 'roi_x'),
-        'roi_y': f.getfloat('Chessboard', 'roi_y'),
-        'chessboard_src': process_points(f.get('Chessboard', 'chessboard_src')),
-        'chessboard_dst': None
+    mat_data = {
+        'mat_length': f.getfloat('Mat', 'mat_length'),
+        'roi_x': f.getfloat('Mat', 'roi_x'),
+        'roi_y': f.getfloat('Mat', 'roi_y'),
+        'mat_src': process_points(f.get('Mat', 'mat_src')),
+        'mat_dst': None
     }
 
     overlay_data = {
@@ -95,4 +95,4 @@ def read_ini(ini_file):
         'overlay_right_bottom_border': process_color(f.get('Status bar', 'overlay_right_bottom_border')),
     }
 
-    return system_data, map_data, chessboard_data, overlay_data, status_bar_data
+    return system_data, map_data, mat_data, overlay_data, status_bar_data

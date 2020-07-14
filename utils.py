@@ -87,7 +87,7 @@ def get_dim(pts, mode, ratio=1):
             print('Invalid map ratio given to the ' + inspect.stack()[0][3] + ' function, exiting program.')
             sys.exit(-1)
 
-    elif not mode:  # Chessboard
+    elif not mode:  # mat
         dst_width = int(max(x) - min(x))
         dst_height = int(max(y) - min(y))
 
@@ -106,7 +106,7 @@ def get_dim(pts, mode, ratio=1):
     return dst_width, dst_height
 
 
-def get_points(img_src, map_data, chessboard_data, mode):
+def get_points(img_src, map_data, mat_data, mode):
 
     if mode:  # Map
         if map_data['map_src'] is None:  # No map source points found
@@ -154,13 +154,13 @@ def get_points(img_src, map_data, chessboard_data, mode):
                     print('')
                     img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
 
-    elif not mode:  # Chessboard
-        if chessboard_data['chessboard_src'] is None:
-            print('Click on the four corners of the chessboard (top left, top right, bottom right, bottom left) the press ENTER.\n'
+    elif not mode:  # mat
+        if mat_data['mat_src'] is None:
+            print('Click on the four corners of the mat (top left, top right, bottom right, bottom left) the press ENTER.\n'
                   'Otherwise, press ESC to exit.')
             print('')
 
-            chessboard_data['chessboard_src'] = get_pts(img_src, mode)
+            mat_data['mat_src'] = get_pts(img_src, mode)
 
     else:  # Shouldn't even get to this point, but whatever
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')

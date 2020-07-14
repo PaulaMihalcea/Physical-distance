@@ -22,12 +22,12 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
             for i in range(0, len(dst_name_parts) - 1):
                 dst_name += str(dst_name_parts[i]) + '.'
             dst_name += 'avi'
-    system_data, map_data, chessboard_data, overlay_data, status_bar_data = read_ini(setup_file)
-    mode = None  # If True, map reference points of that type have been found; if False, chessboard reference points have been found
+    system_data, map_data, mat_data, overlay_data, status_bar_data = read_ini(setup_file)
+    mode = None  # If True, map reference points of that type have been found; if False, mat reference points have been found
 
-    # Mode detection (map or chessboard)
-    if map_data['map_src'] is None and chessboard_data['chessboard_src'] is None:  # No reference points found
-        ans = input('No chessboard or map source points have been found; do you have a chessboard (C)\n'
+    # Mode detection (map or mat)
+    if map_data['map_src'] is None and mat_data['mat_src'] is None:  # No reference points found
+        ans = input('No mat or map source points have been found; do you have a mat (C)\n'
                     'or would you like to select these points directly from the map? (M) ')
         while True:
             if str(ans) == 'c' or str(ans) == 'C':
@@ -39,19 +39,19 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
             else:
                 ans = input('Invalid input, try again:')
 
-    elif isinstance(map_data['map_src'], np.ndarray) and chessboard_data['chessboard_src'] is None:  # Map reference points found
+    elif isinstance(map_data['map_src'], np.ndarray) and mat_data['mat_src'] is None:  # Map reference points found
         mode = True
         print('Map reference points have been found.')
         if isinstance(map_data['map_dst'], np.ndarray):
             print('Map destination points have been found.')
 
-    elif isinstance(chessboard_data['chessboard_src'], np.ndarray) and map_data['map_src'] is None:  # Chessboard reference points found
+    elif isinstance(mat_data['mat_src'], np.ndarray) and map_data['map_src'] is None:  # mat reference points found
         mode = False
-        print('Chessboard reference points have been found.')
+        print('mat reference points have been found.')
 
-    elif isinstance(map_data['map_src'], np.ndarray) and isinstance(chessboard_data['chessboard_src'], np.ndarray):  # Both map and chessboard reference points found
-        ans = input('Both chessboard and map source points have been found;\n'
-                    'would you like to create the map using the chessboard corners (C)\n'
+    elif isinstance(map_data['map_src'], np.ndarray) and isinstance(mat_data['mat_src'], np.ndarray):  # Both map and mat reference points found
+        ans = input('Both mat and map source points have been found;\n'
+                    'would you like to create the map using the mat corners (C)\n'
                     'or the given map source points? (M) ')
         while True:
             if str(ans) == 'c' or str(ans) == 'C':
@@ -102,7 +102,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, map_ratio, points_p = process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, system_data['min_distance'])
+    process, map_ratio, points_p = process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, status_bar_data, system_data['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred or the user closed the window. Exiting program...')

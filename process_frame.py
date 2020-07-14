@@ -1,8 +1,6 @@
 import os
 import cv2
 import sys
-import inspect
-import numpy as np
 from utils import get_points
 from overlay import generate_overlay, apply_overlay
 from transform_coords import transform_coords
@@ -38,15 +36,15 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, out, mode, map_data, chessboard_data, overlay_data, status_bar_data, min_distance):
+def process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, status_bar_data, min_distance):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        get_points(frame, map_data, chessboard_data, mode)
+        get_points(frame, map_data, mat_data, mode)
 
-        generate_overlay(frame, map_data, chessboard_data, status_bar_data, overlay_data, mode)  # Generate overlay
+        generate_overlay(frame, map_data, mat_data, status_bar_data, overlay_data, mode)  # Generate overlay
 
         if mode:
             map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions

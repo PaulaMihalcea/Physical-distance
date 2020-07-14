@@ -6,7 +6,7 @@ from screeninfo import get_monitors
 from utils import get_dim
 
 
-def warp(img_src, map_data, chessboard_data, mode, show=False):
+def warp(img_src, map_data, mat_data, mode, show=False):
 
     if mode:
         # Get destination points
@@ -24,20 +24,20 @@ def warp(img_src, map_data, chessboard_data, mode, show=False):
 
     elif not mode:
 
-        chessboard_length_cm = chessboard_data['chessboard_length'] * 100
+        mat_length_cm = mat_data['mat_length'] * 100
 
-        roi_x_cm = chessboard_data['roi_x'] * 100
-        roi_y_cm = chessboard_data['roi_y'] * 100
+        roi_x_cm = mat_data['roi_x'] * 100
+        roi_y_cm = mat_data['roi_y'] * 100
 
-        chessboard_src = chessboard_data['chessboard_src']
+        mat_src = mat_data['mat_src']
 
-        # Chessboard length in pixels
-        chessboard_length_px = get_dim(chessboard_src, mode)[0]
+        # mat length in pixels
+        mat_length_px = get_dim(mat_src, mode)[0]
 
-        chessboard_dst = np.array([[0, 0], [chessboard_length_px, 0], [chessboard_length_px, chessboard_length_px], [0, chessboard_length_px]])
+        mat_dst = np.array([[0, 0], [mat_length_px, 0], [mat_length_px, mat_length_px], [0, mat_length_px]])
 
         # Homography
-        h, _ = cv2.findHomography(chessboard_src, chessboard_dst)
+        h, _ = cv2.findHomography(mat_src, mat_dst)
 
         src_width = img_src.shape[1]
         src_height = img_src.shape[0]
@@ -57,10 +57,10 @@ def warp(img_src, map_data, chessboard_data, mode, show=False):
         img_dst = cv2.warpPerspective(img_src, th, (dst_width, dst_height))
 
         # Cropping
-        roi_x_px = int(chessboard_length_px * roi_x_cm / chessboard_length_cm)
-        roi_y_px = int(chessboard_length_px * roi_y_cm / chessboard_length_cm)
+        roi_x_px = int(mat_length_px * roi_x_cm / mat_length_cm)
+        roi_y_px = int(mat_length_px * roi_y_cm / mat_length_cm)
 
-        img_dst = img_dst[y_translation - roi_y_px: y_translation + chessboard_length_px + roi_y_px, x_translation - roi_x_px: x_translation + chessboard_length_px + roi_x_px]
+        img_dst = img_dst[y_translation - roi_y_px: y_translation + mat_length_px + roi_y_px, x_translation - roi_x_px: x_translation + mat_length_px + roi_x_px]
 
     else:  # Shouldn't even get to this point, but whatever
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
@@ -110,4 +110,4 @@ def warp(img_src, map_data, chessboard_data, mode, show=False):
         return img_dst, h, None, None
 
     elif not mode:
-        return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + chessboard_length_cm, roi_y_cm * 2 + chessboard_length_cm)
+        return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + mat_length_cm, roi_y_cm * 2 + mat_length_cm)

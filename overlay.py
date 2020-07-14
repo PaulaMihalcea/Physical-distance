@@ -4,7 +4,7 @@ from warp import warp
 from adjust_position import adjust_position
 
 
-def generate_overlay(img_dst, map_data, chessboard_data, status_bar_data, overlay_data, mode):
+def generate_overlay(img_dst, map_data, mat_data, status_bar_data, overlay_data, mode):
 
     # Setup
     overlay_max_width = img_dst.shape[1] - overlay_data['status_bar_min_width']  # Maximum overlay width (status bar dependent)
@@ -15,7 +15,7 @@ def generate_overlay(img_dst, map_data, chessboard_data, status_bar_data, overla
         sys.exit(-1)
 
     # Source image generation
-    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, chessboard_data, mode)  # Generate overlay source image
+    img_src, h, warp_offset, map_dim = warp(img_dst, map_data, mat_data, mode)  # Generate overlay source image
     src_width = img_src.shape[1]  # Overlay source original width
     src_height = img_src.shape[0]  # Overlay source original height
 
