@@ -154,7 +154,7 @@ def get_points(img_src, map_data, mat_data, mode):
                     print('')
                     img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
 
-    elif not mode:  # mat
+    elif not mode:  # Mat
         if mat_data['mat_src'] is None:
             print('Click on the four corners of the mat (top left, top right, bottom right, bottom left) the press ENTER.\n'
                   'Otherwise, press ESC to exit.')

@@ -50,7 +50,7 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
     return points, distances, points_p
 
 
-def get_dista   nce(points, min_distance, map_ratio=1):
+def get_distance(points, min_distance, map_ratio=1):
 
     if isinstance(map_ratio, str) or map_ratio is None:
         map_ratio = 1

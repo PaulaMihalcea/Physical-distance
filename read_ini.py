@@ -29,7 +29,7 @@ def read_ini(ini_file):
     f.read(ini_file)  # Parse the setup.ini file to retrieve settings
 
     system_data = {
-        'min_distance': f.getfloat('System', 'min_distance') * 100,
+        'min_distance': f.getfloat('System', 'min_distance') * 100,  # Safety distance that people should keep between them, converted from meters (in the setupfile) to centimeters
         'default_save': f.getboolean('System', 'default_save'),  # Get the default save setting if it has not been specified in the command line arguments
         'fps': f.getfloat('System', 'fps'),  # Number of frames per second of the output video
         'max_attempts': f.getint('System', 'max_attempts'),  # Maximum video reading attempts before quitting
@@ -37,17 +37,18 @@ def read_ini(ini_file):
     }
 
     map_data = {
-        'map_width': f.getfloat('Map', 'map_width') * 100,
-        'map_height': f.getfloat('Map', 'map_height') * 100,
-        'ratio': f.getfloat('Map', 'ratio'),
-        'map_src': process_points(f.get('Map', 'map_src')),  # Source points
-        'map_dst': process_points(f.get('Map', 'map_dst'))  # Destination points
+        'map_width': f.getfloat('Map', 'map_width') * 100,  # Real floor width in centimeters; it must be given in meters in the setup file
+        'map_height': f.getfloat('Map', 'map_height') * 100,  # Real floor height in centimeters; it must be given in meters in the setup file
+        'ratio': f.getfloat('Map', 'ratio'),  # Floor width/height ratio; useful in some cases to correct perspective
+        'map_src': process_points(f.get('Map', 'map_src')),  # Floor source points
+        'map_dst': process_points(f.get('Map', 'map_dst'))  # Floor destination points
     }
 
     mat_data = {
-        'mat_length': f.getfloat('Mat', 'mat_length'),
-        'roi_x': f.getfloat('Mat', 'roi_x'),
-        'roi_y': f.getfloat('Mat', 'roi_y'),
+        'mat_width': f.getfloat('Mat', 'mat_width') * 100,
+        'mat_height': f.getfloat('Mat', 'mat_height') * 100,
+        'roi_x': f.getfloat('Mat', 'roi_x') * 100,
+        'roi_y': f.getfloat('Mat', 'roi_y') * 100,
         'mat_src': process_points(f.get('Mat', 'mat_src')),
         'mat_dst': None
     }

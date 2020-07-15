@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import inspect
 from screeninfo import get_monitors
-from utils import get_dim
+from get_points import get_dim
 
 
 def warp(img_src, map_data, mat_data, mode, show=False):
@@ -24,10 +24,11 @@ def warp(img_src, map_data, mat_data, mode, show=False):
 
     elif not mode:
 
-        mat_length_cm = mat_data['mat_length'] * 100
+        mat_width_cm = mat_data['mat_width']
+        mat_height_cm = mat_data['mat_height']
 
-        roi_x_cm = mat_data['roi_x'] * 100
-        roi_y_cm = mat_data['roi_y'] * 100
+        roi_x_cm = mat_data['roi_x']
+        roi_y_cm = mat_data['roi_y']
 
         mat_src = mat_data['mat_src']
 
@@ -57,8 +58,8 @@ def warp(img_src, map_data, mat_data, mode, show=False):
         img_dst = cv2.warpPerspective(img_src, th, (dst_width, dst_height))
 
         # Cropping
-        roi_x_px = int(mat_length_px * roi_x_cm / mat_length_cm)
-        roi_y_px = int(mat_length_px * roi_y_cm / mat_length_cm)
+        roi_x_px = int(mat_length_px * roi_x_cm / mat_width_cm)
+        roi_y_px = int(mat_length_px * roi_y_cm / mat_height_cm)
 
         img_dst = img_dst[y_translation - roi_y_px: y_translation + mat_length_px + roi_y_px, x_translation - roi_x_px: x_translation + mat_length_px + roi_x_px]
 
@@ -110,4 +111,4 @@ def warp(img_src, map_data, mat_data, mode, show=False):
         return img_dst, h, None, None
 
     elif not mode:
-        return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + mat_length_cm, roi_y_cm * 2 + mat_length_cm)
+        return img_dst, th, (x_translation - roi_x_px, y_translation - roi_y_px), (roi_x_cm * 2 + mat_width_cm, roi_y_cm * 2 + mat_height_cm)

@@ -1,7 +1,7 @@
 import os
 import cv2
 import sys
-from utils import get_points
+from get_points import get_points
 from overlay import generate_overlay, apply_overlay
 from transform_coords import transform_coords
 

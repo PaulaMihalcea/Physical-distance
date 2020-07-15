@@ -9,10 +9,14 @@ from process_frame import process_frame_first, process_frame
 def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     print('')
-    print('Welcome to the Physical Distance Detector!')
+    print('Welcome to the Physical Distancing Detector!')
     print('')
-
+    print(src, type(src))
     # Parameters
+    if src == '0' or src == '-1':
+        src = 0
+    print(src, type(src))
+
     if dst_name is not None:
         dst_name_parts = dst_name.split('.')
         if len(dst_name_parts) == 1:
@@ -105,7 +109,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     process, map_ratio, points_p = process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, status_bar_data, system_data['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
-        print('An error occurred or the user closed the window. Exiting program...')
+        print('An error occurred. Exiting program...')
         sys.exit()
 
     # Video processing
@@ -138,7 +142,3 @@ if __name__ == '__main__':
     else:
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)
-
-
-# TODO: Salva le coordinate inserite a mano nel file INI
-# TODO: Aggiungi la possibilità di avere un tappetino rettangolare invece che quadrato
