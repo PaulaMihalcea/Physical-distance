@@ -12,10 +12,10 @@ from transform_coords import transform_coords
 # Import for Ubuntu/OSX
 
 try:
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.dirname(os.path.realpath(__file__))  # Current project's main folder path
 
     try:
-        sys.path.append(dir_path + '/openpose/build/python/openpose')
+        sys.path.append(dir_path + '/openpose/build/python/openpose')  # OpenPose Python library path
         import pyopenpose as op
     except ImportError as e:
         print('Error: OpenPose library could not be found.')
@@ -23,10 +23,10 @@ try:
 
     # Parameters
     params = dict()
-    params['model_folder'] = dir_path + '/openpose/models'
-    params['logging_level'] = 255
+    params['model_folder'] = dir_path + '/openpose/models'  # Models folder
+    params['logging_level'] = 255  # No logging
 
-    # Starting OpenPose
+    # Start OpenPose
     opWrapper = op.WrapperPython()
     opWrapper.configure(params)
     opWrapper.start()
@@ -42,14 +42,14 @@ def process_frame_first(cap, src, out, mode, floor_data, mat_data, overlay_data,
 
     if frame is not None:
 
-        get_points(frame, floor_data, mat_data, mode)
+        get_points(frame, floor_data, mat_data, mode)  # Get source points
 
         generate_overlay(frame, floor_data, mat_data, status_bar_data, overlay_data, mode)  # Generate overlay
 
-        if mode:
-            map_dim = [floor_data['floor_width'], floor_data['floor_width']]  # Real floor dimensions
+        if mode:  # Real map dimensions for floor mode
+            map_dim = [floor_data['floor_width'], floor_data['floor_width']]
             floor_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
-        elif not mode:
+        elif not mode:  # Real map dimensions for mat mode
             map_dim = overlay_data['map_dim']
             floor_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
 
@@ -59,6 +59,7 @@ def process_frame_first(cap, src, out, mode, floor_data, mat_data, overlay_data,
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
+        # People's position estimation
         people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], floor_ratio, min_distance, overlay_data['warp_offset'])
 
         # Frame overlay
@@ -101,6 +102,7 @@ def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, fl
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
+        # People's position estimation
         people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], floor_ratio, min_distance, overlay_data['warp_offset'], position_alpha, points_p)
 
         # Frame overlay

@@ -13,20 +13,21 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     print('')
 
     # Parameters
-    if src == '0' or src == '-1':
+    if src == '0' or src == '-1':  # Ensure that argument is an int if webcam is selected
         src = 0
 
-    if dst_name is not None:
+    if dst_name is not None:  # Destination name check
         dst_name_parts = dst_name.split('.')
-        if len(dst_name_parts) == 1:
+        if len(dst_name_parts) == 1:  # Add extension if non-existent
             dst_name += '.avi'
-        elif dst_name_parts[len(dst_name_parts) - 1] != 'avi':
+        elif dst_name_parts[len(dst_name_parts) - 1] != 'avi':  # Check and replace wrong extension (only AVI is allowed)
             dst_name = ''
             for i in range(0, len(dst_name_parts) - 1):
                 dst_name += str(dst_name_parts[i]) + '.'
             dst_name += 'avi'
-    system_data, floor_data, mat_data, overlay_data, status_bar_data = read_ini(setup_file)
-    mode = None  # If True, floor reference points of that type have been found; if False, mat reference points have been found
+
+    system_data, floor_data, mat_data, overlay_data, status_bar_data = read_ini(setup_file)  # Setup file parameters
+    mode = None  # Mode flag; if True, floor reference points of that type have been found; if False, mat reference points have been found
 
     # Mode detection (floor or mat)
     if floor_data['floor_src'] is None and mat_data['mat_src'] is None:  # No reference points found
@@ -54,13 +55,13 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     elif isinstance(floor_data['floor_src'], np.ndarray) and isinstance(mat_data['mat_src'], np.ndarray):  # Both floor and mat reference points found
         ans = input('Both mat and floor source points have been found;\n'
-                    'would you like to create the map using the mat corners (C)\n'
-                    'or the given floor source points? (M) ')
+                    'would you like to create the map using the mat corners (M)\n'
+                    'or the given floor source points? (F) ')
         while True:
-            if str(ans) == 'c' or str(ans) == 'C':
+            if str(ans) == 'm' or str(ans) == 'M':
                 mode = False
                 break
-            elif str(ans) == 'm' or str(ans) == 'M':
+            elif str(ans) == 'f' or str(ans) == 'F':
                 mode = True
                 if floor_data['floor_dst'] is not None:
                     print('')
@@ -69,13 +70,13 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
             else:
                 ans = input('Invalid input, try again:')
 
-    else:
+    else:  # Generic setup file error
         print('An error occurred while reading the ' + setup_file + ', exiting program.')
         sys.exit(-1)
 
     print('')
 
-    # Parameters
+    # Default save parameter
     if save is None:
         save = system_data['default_save']
 
@@ -94,9 +95,9 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     # Output video parameters
     if save:
         if dst_name is not None:
-            output_video = dst_name.replace('.' + dst_name.partition('.')[len(dst_name.partition('.')) - 1], '.avi')  # Sets the specified name for the output video (replacing the original extension)...
+            output_video = dst_name.replace('.' + dst_name.partition('.')[len(dst_name.partition('.')) - 1], '.avi')  # Set the specified name for the output video (replacing the original extension)...
         else:
-            output_video = src[::-1].partition('.')[2].partition('/')[0][::-1] + '_output.avi'  # ...or just gets the input name and adds '_output.avi' at the end
+            output_video = src[::-1].partition('.')[2].partition('/')[0][::-1] + '_output.avi'  # ...or just get the input name and add '_output.avi' at the end
 
         fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Defines the codec and creates a VideoWriter object
 
@@ -129,15 +130,16 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     sys.exit(0)  # Exit program
 
 
+# Command line argument parsing
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 2:  # Only source
         main(str(sys.argv[1]))
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 3:  # Source and save
         main(str(sys.argv[1]), sys.argv[2])
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 4:  # Source, save and destination
         main(str(sys.argv[1]), sys.argv[2], sys.argv[3])
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 5:  # Source, save, destination and setup file
         main(str(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4])
-    else:
+    else:  # Everything else
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)

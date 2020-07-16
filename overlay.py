@@ -15,35 +15,35 @@ def generate_overlay(img_dst, floor_data, mat_data, status_bar_data, overlay_dat
         sys.exit(-1)
 
     # Source image generation
-    img_src, h, warp_offset, map_dim = warp(img_dst, floor_data, mat_data, mode)  # Generate overlay source image
-    src_width = img_src.shape[1]  # Overlay source original width
-    src_height = img_src.shape[0]  # Overlay source original height
+    img_src, h, warp_offset, map_dim = warp(img_dst, floor_data, mat_data, mode)  # Generate map source image
+    src_width = img_src.shape[1]  # Map source original width
+    src_height = img_src.shape[0]  # Map source original height
 
-    # Overlay size check
-    if img_src.shape[1] + overlay_data['border_thickness'] * 2 > overlay_max_width:  # Check if overlay width is too large
+    # Map size check
+    if img_src.shape[1] + overlay_data['border_thickness'] * 2 > overlay_max_width:  # Check if map width is too large
         new_width = overlay_max_width - overlay_data['border_thickness'] * 2
         new_height = int(overlay_max_width / img_src.shape[1] * img_src.shape[0])
-        if new_width == 0:
+        if new_width == 0:  # In extreme cases might become 0, so 1 is the minimum
             new_width = 1
-        elif new_height == 0:
+        elif new_height == 0:  # In extreme cases might become 0, so 1 is the minimum
             new_height = 1
-        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
+        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize map accordingly
 
-    if img_src.shape[0] + overlay_data['border_thickness'] * 2 > overlay_max_height:  # Check if overlay height is too large
+    if img_src.shape[0] + overlay_data['border_thickness'] * 2 > overlay_max_height:  # Check if map height is too large
         new_height = overlay_max_height
         new_width = int(overlay_max_height / img_src.shape[0] * img_src.shape[1])
-        if new_width == 0:
+        if new_width == 0:  # In extreme cases might become 0, so 1 is the minimum
             new_width = 1
-        elif new_height == 0:
+        elif new_height == 0:  # In extreme cases might become 0, so 1 is the minimum
             new_height = 1
-        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize overlay width accordingly
+        img_src = cv2.resize(img_src, (new_width, new_height))   # Resize map accordingly
 
-    # Overlay background
-    if img_src.shape[0] < overlay_data['status_bar_min_height']:  # Add empty background to overlay if it's too small with respect to the status bar
-        offset = int((overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 2)) / 2) - 1
+    # Map background
+    if img_src.shape[0] < overlay_data['status_bar_min_height']:  # Add empty background (= border) to map if it's too small with respect to the status bar
+        offset = int((overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 2)) / 2) - 1  # An additional top border will introduce an offset that must be considered for a correct people position drawing
         if offset < 0:
             offset = 0
-        if (overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 1)) % 2 == 0:
+        if (overlay_data['status_bar_min_height'] - (img_src.shape[0] + overlay_data['border_thickness'] * 2 - 1)) % 2 == 0:  # Compute and add top and bottom border
             img_src = cv2.copyMakeBorder(img_src, offset + 1, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=status_bar_data['status_bar_background'])
         else:
             img_src = cv2.copyMakeBorder(img_src, offset, offset + 1, 0, 0, cv2.BORDER_CONSTANT, value=status_bar_data['status_bar_background'])
@@ -51,14 +51,14 @@ def generate_overlay(img_dst, floor_data, mat_data, status_bar_data, overlay_dat
     else:
         offset = 0
 
-    # Overlay border creation
+    # Map external border creation
     img_src = cv2.copyMakeBorder(img_src, overlay_data['border_thickness'], 0, overlay_data['border_thickness'], 0, cv2.BORDER_CONSTANT, value=status_bar_data['overlay_left_top_border'])
     img_src = cv2.copyMakeBorder(img_src, 0, overlay_data['border_thickness'], 0, overlay_data['border_thickness'], cv2.BORDER_CONSTANT, value=status_bar_data['overlay_right_bottom_border'])
 
     overlay_width = img_src.shape[1]
     overlay_height = img_src.shape[0]
 
-    # Overlay position
+    # Map position
     corners = []
     if overlay_data['overlay_position'] == 0:  # Top left
         start_point = [0, 0]
@@ -77,6 +77,7 @@ def generate_overlay(img_dst, floor_data, mat_data, status_bar_data, overlay_dat
         end_point = (overlay_width, img_dst.shape[0])
         corners.extend([(end_point[0], start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (img_dst.shape[1] - 1, start_point[1] - overlay_data['status_bar_min_height'] + overlay_height - 1), (img_dst.shape[1] - 1, img_dst.shape[0] - 1), (end_point[0], img_dst.shape[0] - 1)])
 
+    # Map ratios (needed for correct further transformations)
     width_ratio = src_width / img_src.shape[1]
     height_ratio = src_height / img_src.shape[0]
 
@@ -91,7 +92,7 @@ def generate_overlay(img_dst, floor_data, mat_data, status_bar_data, overlay_dat
                                'map_dim': map_dim
                                }
 
-    overlay_data.update(overlay_additional_data)
+    overlay_data.update(overlay_additional_data)  # Update overlay_data dictionary with the map and its data
 
     return
 
@@ -104,7 +105,7 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data, alt):
     start_point = overlay_data['start_end_points'][0]
     end_point = overlay_data['start_end_points'][1]
 
-    # Overlay image creation
+    # Map overlay application
     i = start_point[0]
     io = 0
 
@@ -134,6 +135,7 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data, alt):
 
         people[0] = adjust_position(people[0], (add_x, add_y), dim_x, dim_y, overlay_data['position_tolerance'])
 
+    # Draw multiple people
     if people[0] is not None and len(people[0]) > 1:
         # People positions (multi color version)
         v = people[1]  # People that do not respect minimum distance
@@ -144,6 +146,7 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data, alt):
                     img_dst = cv2.circle(img_dst, (people[0][k][0], people[0][k][1]), 1, (0, 0, 255, 255), -1)
         n_people = str(len(people[0]))
 
+    # Draw one person
     elif people[0] is not None and len(people[0]) == 1:
         # People positions (single color version)
         for k in range(0, len(people[0])):
@@ -153,11 +156,11 @@ def apply_overlay(img_dst, overlay_data, people, status_bar_data, alt):
         n_people = str(0)
 
     # Status bar text
-    if alt:
+    if alt:  # Safety distance violation
         img_dst = cv2.putText(img_dst, status_bar_data['status_1_alt'] + ' ' + n_people, (overlay_data['corners'][0][0] + status_bar_data['status_1_offset_alt'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_1_alt']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_1_color_alt'], 1)  # First line
         img_dst = cv2.putText(img_dst, status_bar_data['status_2_alt'], (overlay_data['corners'][0][0] + status_bar_data['status_2_offset_alt'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_2_alt']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_2_color_alt'], 1)  # Second line
         img_dst = cv2.putText(img_dst, status_bar_data['status_3_alt'], (overlay_data['corners'][0][0] + status_bar_data['status_3_offset_alt'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_3_alt']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_3_color_alt'], 1)  # Third line
-    else:
+    else:  # No safety distance violation
         img_dst = cv2.putText(img_dst, status_bar_data['status_1'] + ' ' + n_people, (overlay_data['corners'][0][0] + status_bar_data['status_1_offset'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_1']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_1_color'], 1)  # First line
         img_dst = cv2.putText(img_dst, status_bar_data['status_2'], (overlay_data['corners'][0][0] + status_bar_data['status_2_offset'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_2']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_2_color'], 1)  # Second line
         img_dst = cv2.putText(img_dst, status_bar_data['status_3'], (overlay_data['corners'][0][0] + status_bar_data['status_3_offset'] - 1, overlay_data['corners'][0][1] + status_bar_data['line_spacing_3']), cv2.FONT_HERSHEY_DUPLEX, 0.6, status_bar_data['status_3_color'], 1)  # Third line

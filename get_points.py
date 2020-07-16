@@ -4,7 +4,7 @@ import inspect
 import numpy as np
 
 
-def is_int(n):
+def is_int(n):  # Check if a given number is an int or something else
     try:
         n = int(n)
         return n
@@ -30,20 +30,20 @@ def get_color(n):  # Choose a color based on the number of the point that is abo
     return c
 
 
-def mouse_handler(event, x, y, flags, data):
+def mouse_handler(event, x, y, flags, data):  # Mouse handler function
 
-    if event == cv2.EVENT_LBUTTONDOWN and len(data['pts']) < 4:
+    if event == cv2.EVENT_LBUTTONDOWN and len(data['pts']) < 4:  # Only four points are allowed
         c = get_color(len(data['pts']))  # Get the color of the point that is about to be drawn on the image
         cv2.circle(data['img'], (x, y), 5, c, -1)  # Draw a small dot of the selected color centered around the pixel the user has clicked on
         cv2.imshow('Choose points...', data['img'])  # Show the original image
         data['pts'].append([x, y])  # Append the acquired point to the points array
 
 
-def get_pts(img, borders):
+def get_pts(img, borders):  # Get source points coordinates by clicking on OpenCV window
 
     data = {'img': img.copy(),  # Use a copy of the original image during the points' acquisition
             'pts': []}  # Array of points
-    cv2.imshow('Choose points...', data['img'])  # Show the image to choose points on
+    cv2.imshow('Choose points...', data['img'])  # Show the image to choose points from
 
     while True:
 
@@ -54,7 +54,7 @@ def get_pts(img, borders):
             cv2.destroyAllWindows()  # Close the choosing points window and return
             break
         if borders and k == 32:  # SPACEBAR
-            cv2.destroyAllWindows()  # Close the choosing points window and return the necessary flags to begin a new operation
+            cv2.destroyAllWindows()  # Close the choosing points window and return the necessary flags to begin a new operation (namely, border selection)
             return None
         if k == 27:  # ESC
             print('Exiting program...')
@@ -68,7 +68,7 @@ def get_pts(img, borders):
     return pts
 
 
-def get_dim(pts, mode, ratio=1):
+def get_dim(pts, mode, ratio=1):  # Get dimension of the source points set's bounding box
     x = []  # x coordinates of all points
     y = []  # y coordinates of all points
 
@@ -76,7 +76,7 @@ def get_dim(pts, mode, ratio=1):
         x.append(pts[i][0])
         y.append(pts[i][1])
 
-    if mode:  # Floor
+    if mode:  # Floor also considers ratio, if given
         if ratio > 0:
             dst_width = int(max(x) - min(x))
             dst_height = int(int(max(y) - min(y)) * ratio)
@@ -120,47 +120,47 @@ def get_points(img_src, floor_data, mat_data, mode):
                       'Otherwise, press ESC to exit.')
                 print('')
 
-                floor_data['floor_src'] = get_pts(img_src_b, mode)
+                floor_data['floor_src'] = get_pts(img_src_b, mode)  # Get the actual points coordinates
 
                 if floor_data['floor_src'] is not None:  # Exit source points loop if four valid points have been returned
                     break
                 else:
                     border = [None] * 4  # Border thickness
                     while True:
-                        border[0] = is_int(input('Insert left border thickness in pixels: '))
+                        border[0] = is_int(input('Insert left border thickness in pixels: '))  # Left border
                         if border[0] is None or border[0] < 0:
                             print('Invalid input.')
                         else:
                             break
                     while True:
-                        border[1] = is_int(input('Insert top border thickness in pixels: '))
+                        border[1] = is_int(input('Insert top border thickness in pixels: '))  # Top border
                         if border[1] is None or border[1] < 0:
                             print('Invalid input.')
                         else:
                             break
                     while True:
-                        border[2] = is_int(input('Insert right border thickness in pixels: '))
+                        border[2] = is_int(input('Insert right border thickness in pixels: '))  # Right border
                         if border[2] is None or border[2] < 0:
                             print('Invalid input.')
                         else:
                             break
                     while True:
-                        border[3] = is_int(input('Insert bottom border thickness in pixels: '))
+                        border[3] = is_int(input('Insert bottom border thickness in pixels: '))  # Bottom border
                         if border[3] is None or border[3] < 0:
                             print('Invalid input.')
                         else:
                             break
 
                     print('')
-                    img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (for planes outside image)
+                    img_src_b = cv2.copyMakeBorder(img_src, border[1], border[3], border[0], border[2], cv2.BORDER_CONSTANT)  # Add border to image (useful for points that fall outside the image)
 
     elif not mode:  # Mat
         if mat_data['mat_src'] is None:
-            print('Click on the four corners of the mat (top left, top right, bottom right, bottom left) the press ENTER.\n'
+            print('Click on the four corners of the mat (top left, top right, bottom right, bottom left) then press ENTER.\n'
                   'Otherwise, press ESC to exit.')
             print('')
 
-            mat_data['mat_src'] = get_pts(img_src, mode)
+            mat_data['mat_src'] = get_pts(img_src, mode)  # Get the actual points coordinates
 
     else:  # Shouldn't even get to this point, but whatever
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
