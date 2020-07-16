@@ -40,6 +40,22 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, floor_ratio, min_dista
         distances = None
 
     if (points is not None) and (points_p is not None) and (len(points) == len(points_p)):
+
+        x_coords_sorted = []
+        for i in range(0, len(points)):
+            x_coords_sorted.append(int(points[i][0]))
+
+        x_coords_sorted.sort()
+
+        points_sorted = []
+        for i in range(0, len(x_coords_sorted)):
+            for j in range(0, len(points)):
+                if x_coords_sorted[i] == points[j][0]:
+                    points_sorted.append(points[j])
+                    pass
+
+        points = np.float32(points_sorted)
+
         for i in range(0, len(points)):
             points[i][0] = points[i][0] * alpha + points_p[i][0] * (1 - alpha)
             points[i][1] = points[i][1] * alpha + points_p[i][1] * (1 - alpha)
