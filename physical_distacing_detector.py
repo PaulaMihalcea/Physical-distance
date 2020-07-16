@@ -143,5 +143,3 @@ if __name__ == '__main__':
     else:  # Everything else
         print('An error occurred in the ' + inspect.stack()[0][3] + ' function, exiting program.')
         sys.exit(-1)
-
-# TODO Remove this comment
