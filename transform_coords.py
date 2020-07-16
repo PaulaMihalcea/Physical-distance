@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distance, warp_offset, alpha=None, points_p=None):
+def transform_coords(op_keypoints, h, warp_overlay_ratio, floor_ratio, min_distance, warp_offset, alpha=None, points_p=None):
 
     if op_keypoints.shape:
         points = np.zeros((op_keypoints.shape[0], 2))
@@ -25,7 +25,7 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
 
         points = points.astype('int')
 
-        distances = get_distance(points, min_distance, map_ratio)
+        distances = get_distance(points, min_distance, floor_ratio)
 
     elif points is not None and len(points) == 1:
         for i in range(0, len(points)):
@@ -50,14 +50,14 @@ def transform_coords(op_keypoints, h, warp_overlay_ratio, map_ratio, min_distanc
     return points, distances, points_p
 
 
-def get_distance(points, min_distance, map_ratio=1):
+def get_distance(points, min_distance, floor_ratio=1):
 
-    if isinstance(map_ratio, str) or map_ratio is None:
-        map_ratio = 1
+    if isinstance(floor_ratio, str) or floor_ratio is None:
+        floor_ratio = 1
 
     points = np.asmatrix(points, dtype='float64')
-    points[:, 0] *= map_ratio[0]
-    points[:, 1] *= map_ratio[1]
+    points[:, 0] *= floor_ratio[0]
+    points[:, 1] *= floor_ratio[1]
 
     distances = np.zeros((len(points), len(points)))
 

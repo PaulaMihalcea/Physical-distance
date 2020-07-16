@@ -11,11 +11,10 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
     print('')
     print('Welcome to the Physical Distancing Detector!')
     print('')
-    print(src, type(src))
+
     # Parameters
     if src == '0' or src == '-1':
         src = 0
-    print(src, type(src))
 
     if dst_name is not None:
         dst_name_parts = dst_name.split('.')
@@ -26,46 +25,46 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
             for i in range(0, len(dst_name_parts) - 1):
                 dst_name += str(dst_name_parts[i]) + '.'
             dst_name += 'avi'
-    system_data, map_data, mat_data, overlay_data, status_bar_data = read_ini(setup_file)
-    mode = None  # If True, map reference points of that type have been found; if False, mat reference points have been found
+    system_data, floor_data, mat_data, overlay_data, status_bar_data = read_ini(setup_file)
+    mode = None  # If True, floor reference points of that type have been found; if False, mat reference points have been found
 
-    # Mode detection (map or mat)
-    if map_data['map_src'] is None and mat_data['mat_src'] is None:  # No reference points found
-        ans = input('No mat or map source points have been found; do you have a mat (C)\n'
-                    'or would you like to select these points directly from the map? (M) ')
+    # Mode detection (floor or mat)
+    if floor_data['floor_src'] is None and mat_data['mat_src'] is None:  # No reference points found
+        ans = input('No mat or floor source points have been found; do you have a mat (M)\n'
+                    'or would you like to select these points directly from the floor? (F) ')
         while True:
-            if str(ans) == 'c' or str(ans) == 'C':
+            if str(ans) == 'm' or str(ans) == 'M':
                 mode = False
                 break
-            elif str(ans) == 'm' or str(ans) == 'M':
+            elif str(ans) == 'f' or str(ans) == 'F':
                 mode = True
                 break
             else:
                 ans = input('Invalid input, try again:')
 
-    elif isinstance(map_data['map_src'], np.ndarray) and mat_data['mat_src'] is None:  # Map reference points found
+    elif isinstance(floor_data['floor_src'], np.ndarray) and mat_data['mat_src'] is None:  # Floor reference points found
         mode = True
-        print('Map reference points have been found.')
-        if isinstance(map_data['map_dst'], np.ndarray):
-            print('Map destination points have been found.')
+        print('Floor reference points have been found.')
+        if isinstance(floor_data['floor_dst'], np.ndarray):
+            print('Floor destination points have been found.')
 
-    elif isinstance(mat_data['mat_src'], np.ndarray) and map_data['map_src'] is None:  # mat reference points found
+    elif isinstance(mat_data['mat_src'], np.ndarray) and floor_data['floor_src'] is None:  # Mat reference points found
         mode = False
-        print('mat reference points have been found.')
+        print('Mat reference points have been found.')
 
-    elif isinstance(map_data['map_src'], np.ndarray) and isinstance(mat_data['mat_src'], np.ndarray):  # Both map and mat reference points found
-        ans = input('Both mat and map source points have been found;\n'
+    elif isinstance(floor_data['floor_src'], np.ndarray) and isinstance(mat_data['mat_src'], np.ndarray):  # Both floor and mat reference points found
+        ans = input('Both mat and floor source points have been found;\n'
                     'would you like to create the map using the mat corners (C)\n'
-                    'or the given map source points? (M) ')
+                    'or the given floor source points? (M) ')
         while True:
             if str(ans) == 'c' or str(ans) == 'C':
                 mode = False
                 break
             elif str(ans) == 'm' or str(ans) == 'M':
                 mode = True
-                if map_data['map_dst'] is not None:
+                if floor_data['floor_dst'] is not None:
                     print('')
-                    print('Map destination points have been found.')
+                    print('Floor destination points have been found.')
                 break
             else:
                 ans = input('Invalid input, try again:')
@@ -106,7 +105,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
         out = None  # If the video is not to be saved, a null argument is passed
 
     # First frame processing
-    process, map_ratio, points_p = process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, status_bar_data, system_data['min_distance'])
+    process, floor_ratio, points_p = process_frame_first(cap, src, out, mode, floor_data, mat_data, overlay_data, status_bar_data, system_data['min_distance'])
 
     if not process:  # Exit program if process_first_frame() returns False
         print('An error occurred. Exiting program...')
@@ -114,7 +113,7 @@ def main(src, save=None, dst_name=None, setup_file='setup.ini'):
 
     # Video processing
     while process:
-        process, points_p = process_frame(cap, src, out, overlay_data, status_bar_data, system_data['min_distance'], map_ratio, system_data['position_alpha'], points_p)
+        process, points_p = process_frame(cap, src, out, overlay_data, status_bar_data, system_data['min_distance'], floor_ratio, system_data['position_alpha'], points_p)
 
     # Final operations
     cap.release()  # Release capture when finished

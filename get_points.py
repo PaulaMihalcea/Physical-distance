@@ -76,7 +76,7 @@ def get_dim(pts, mode, ratio=1):
         x.append(pts[i][0])
         y.append(pts[i][1])
 
-    if mode:  # Map
+    if mode:  # Floor
         if ratio > 0:
             dst_width = int(max(x) - min(x))
             dst_height = int(int(max(y) - min(y)) * ratio)
@@ -84,10 +84,10 @@ def get_dim(pts, mode, ratio=1):
             dst_width = int(int(max(x) - min(x)) * ratio)
             dst_height = int(max(y) - min(y))
         else:
-            print('Invalid map ratio given to the ' + inspect.stack()[0][3] + ' function, exiting program.')
+            print('Invalid floor ratio given to the ' + inspect.stack()[0][3] + ' function, exiting program.')
             sys.exit(-1)
 
-    elif not mode:  # mat
+    elif not mode:  # Mat
         dst_width = int(max(x) - min(x))
         dst_height = int(max(y) - min(y))
 
@@ -106,10 +106,10 @@ def get_dim(pts, mode, ratio=1):
     return dst_width, dst_height
 
 
-def get_points(img_src, map_data, mat_data, mode):
+def get_points(img_src, floor_data, mat_data, mode):
 
-    if mode:  # Map
-        if map_data['map_src'] is None:  # No map source points found
+    if mode:  # Floor
+        if floor_data['floor_src'] is None:  # No floor source points found
             img_src_b = img_src.copy()  # Image with border
 
             # Get points by click
@@ -120,9 +120,9 @@ def get_points(img_src, map_data, mat_data, mode):
                       'Otherwise, press ESC to exit.')
                 print('')
 
-                map_data['map_src'] = get_pts(img_src_b, mode)
+                floor_data['floor_src'] = get_pts(img_src_b, mode)
 
-                if map_data['map_src'] is not None:  # Exit source points loop if four valid points have been returned
+                if floor_data['floor_src'] is not None:  # Exit source points loop if four valid points have been returned
                     break
                 else:
                     border = [None] * 4  # Border thickness

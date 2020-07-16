@@ -36,12 +36,12 @@ def read_ini(ini_file):
         'position_alpha': f.getfloat('System', 'position_alpha')
     }
 
-    map_data = {
-        'map_width': f.getfloat('Map', 'map_width') * 100,  # Real floor width in centimeters; it must be given in meters in the setup file
-        'map_height': f.getfloat('Map', 'map_height') * 100,  # Real floor height in centimeters; it must be given in meters in the setup file
-        'ratio': f.getfloat('Map', 'ratio'),  # Floor width/height ratio; useful in some cases to correct perspective
-        'map_src': process_points(f.get('Map', 'map_src')),  # Floor source points
-        'map_dst': process_points(f.get('Map', 'map_dst'))  # Floor destination points
+    floor_data = {
+        'floor_width': f.getfloat('Floor', 'floor_width') * 100,  # Real floor width in centimeters; it must be given in meters in the setup file
+        'floor_height': f.getfloat('Floor', 'floor_height') * 100,  # Real floor height in centimeters; it must be given in meters in the setup file
+        'ratio': f.getfloat('Floor', 'ratio'),  # Floor width/height ratio; useful in some cases to correct perspective
+        'floor_src': process_points(f.get('Floor', 'floor_src')),  # Floor source points
+        'floor_dst': process_points(f.get('Floor', 'floor_dst'))  # Floor destination points
     }
 
     mat_data = {
@@ -96,4 +96,4 @@ def read_ini(ini_file):
         'overlay_right_bottom_border': process_color(f.get('Status bar', 'overlay_right_bottom_border')),
     }
 
-    return system_data, map_data, mat_data, overlay_data, status_bar_data
+    return system_data, floor_data, mat_data, overlay_data, status_bar_data

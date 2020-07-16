@@ -36,22 +36,22 @@ except Exception as e:
     sys.exit(-1)
 
 
-def process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, status_bar_data, min_distance):
+def process_frame_first(cap, src, out, mode, floor_data, mat_data, overlay_data, status_bar_data, min_distance):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean (True if the frame has been read correctly, False otherwise) and a frame
 
     if frame is not None:
 
-        get_points(frame, map_data, mat_data, mode)
+        get_points(frame, floor_data, mat_data, mode)
 
-        generate_overlay(frame, map_data, mat_data, status_bar_data, overlay_data, mode)  # Generate overlay
+        generate_overlay(frame, floor_data, mat_data, status_bar_data, overlay_data, mode)  # Generate overlay
 
         if mode:
-            map_dim = [map_data['map_width'], map_data['map_width']]  # Real map dimensions
-            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
+            map_dim = [floor_data['floor_width'], floor_data['floor_width']]  # Real floor dimensions
+            floor_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
         elif not mode:
             map_dim = overlay_data['map_dim']
-            map_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
+            floor_ratio = [map_dim[0] / overlay_data['overlay_dim'][0], map_dim[1] / overlay_data['overlay_dim'][1]]
 
         # OpenPose image processing
         datum = op.Datum()
@@ -59,7 +59,7 @@ def process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, s
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'])
+        people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], floor_ratio, min_distance, overlay_data['warp_offset'])
 
         # Frame overlay
         if v is not None and len(v) > 0:
@@ -86,10 +86,10 @@ def process_frame_first(cap, src, out, mode, map_data, mat_data, overlay_data, s
     else:
         return False, None
 
-    return True, map_ratio, points_p
+    return True, floor_ratio, points_p
 
 
-def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, map_ratio, position_alpha, points_p):
+def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, floor_ratio, position_alpha, points_p):
 
     _, frame = cap.read()  # Frame by frame capture; returns a boolean: True if the frame has been read correctly, False otherwise; also returns a frame
 
@@ -101,7 +101,7 @@ def process_frame(cap, src, out, overlay_data, status_bar_data, min_distance, ma
         opWrapper.emplaceAndPop([datum])
         frame = datum.cvOutputData
 
-        people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], map_ratio, min_distance, overlay_data['warp_offset'], position_alpha, points_p)
+        people, v, points_p = transform_coords(datum.poseKeypoints, overlay_data['h'], overlay_data['width_height_ratio'], floor_ratio, min_distance, overlay_data['warp_offset'], position_alpha, points_p)
 
         # Frame overlay
         if v is not None and len(v) > 0:

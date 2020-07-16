@@ -6,19 +6,19 @@ from screeninfo import get_monitors
 from get_points import get_dim
 
 
-def warp(img_src, map_data, mat_data, mode, show=False):
+def warp(img_src, floor_data, mat_data, mode, show=False):
 
     if mode:
         # Get destination points
-        if map_data['map_dst'] is None:
-            dst_dim = get_dim(map_data['map_src'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+        if floor_data['floor_dst'] is None:
+            dst_dim = get_dim(floor_data['floor_src'], mode, floor_data['ratio'])  # Calculate dimensions of destination image
 
-            map_data['map_dst'] = np.array([[0, 0], [dst_dim[0] - 1, 0], [dst_dim[0] - 1, dst_dim[0] - 1], [0, dst_dim[0] - 1]])  # Set destination points
+            floor_data['floor_dst'] = np.array([[0, 0], [dst_dim[0] - 1, 0], [dst_dim[0] - 1, dst_dim[0] - 1], [0, dst_dim[0] - 1]])  # Set destination points
         else:
-            dst_dim = get_dim(map_data['map_dst'], mode, map_data['ratio'])  # Calculate dimensions of destination image
+            dst_dim = get_dim(floor_data['floor_dst'], mode, floor_data['ratio'])  # Calculate dimensions of destination image
 
         # Warp
-        h, _ = cv2.findHomography(map_data['map_src'], map_data['map_dst'])  # Calculate homography
+        h, _ = cv2.findHomography(floor_data['floor_src'], floor_data['floor_dst'])  # Calculate homography
 
         img_dst = cv2.warpPerspective(img_src, h, (dst_dim[0], dst_dim[1]))  # Warp source image based on homography
 
