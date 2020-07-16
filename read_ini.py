@@ -68,32 +68,32 @@ def read_ini(ini_file):
         'status_1': f.get('Status bar', 'status_1'),  # Status bar text, line 1
         'status_2': f.get('Status bar', 'status_2'),  # Status bar text, line 2
         'status_3': f.get('Status bar', 'status_3'),  # Status bar text, line 3
-        'status_1_color': process_color(f.get('Status bar', 'status_1_color')),
-        'status_2_color': process_color(f.get('Status bar', 'status_2_color')),
-        'status_3_color': process_color(f.get('Status bar', 'status_3_color')),
-        'line_spacing_1': f.getint('Status bar', 'line_spacing_1'),
-        'line_spacing_2': f.getint('Status bar', 'line_spacing_2'),
-        'line_spacing_3': f.getint('Status bar', 'line_spacing_3'),
-        'status_1_offset': f.getint('Status bar', 'status_1_offset'),
-        'status_2_offset': f.getint('Status bar', 'status_2_offset'),
-        'status_3_offset': f.getint('Status bar', 'status_3_offset'),
+        'status_1_color': process_color(f.get('Status bar', 'status_1_color')),  # Status bar text color (BGR), line 1
+        'status_2_color': process_color(f.get('Status bar', 'status_2_color')),  # Status bar text color (BGR), line 2
+        'status_3_color': process_color(f.get('Status bar', 'status_3_color')),  # Status bar text color (BGR), line 3
+        'line_spacing_1': f.getint('Status bar', 'line_spacing_1'),  # Status bar text spacing from previous line, line 1
+        'line_spacing_2': f.getint('Status bar', 'line_spacing_2'),  # Status bar text spacing from previous line, line 2
+        'line_spacing_3': f.getint('Status bar', 'line_spacing_3'),  # Status bar text spacing from previous line, line 3
+        'status_1_offset': f.getint('Status bar', 'status_1_offset'),  # Status bar text spacing from left border, line 1
+        'status_2_offset': f.getint('Status bar', 'status_2_offset'),  # Status bar text spacing from left border, line 2
+        'status_3_offset': f.getint('Status bar', 'status_3_offset'),  # Status bar text spacing from left border, line 3
 
         'status_1_alt': f.get('Status bar', 'status_1_alt'),  # Status bar alternative text, line 1
         'status_2_alt': f.get('Status bar', 'status_2_alt'),  # Status bar alternative text, line 2
         'status_3_alt': f.get('Status bar', 'status_3_alt'),  # Status bar alternative text, line 3
-        'status_1_color_alt': process_color(f.get('Status bar', 'status_1_color_alt')),
-        'status_2_color_alt': process_color(f.get('Status bar', 'status_2_color_alt')),
-        'status_3_color_alt': process_color(f.get('Status bar', 'status_3_color_alt')),
-        'line_spacing_1_alt': f.getint('Status bar', 'line_spacing_1_alt'),
-        'line_spacing_2_alt': f.getint('Status bar', 'line_spacing_2_alt'),
-        'line_spacing_3_alt': f.getint('Status bar', 'line_spacing_3_alt'),
-        'status_1_offset_alt': f.getint('Status bar', 'status_1_offset_alt'),
-        'status_2_offset_alt': f.getint('Status bar', 'status_2_offset_alt'),
-        'status_3_offset_alt': f.getint('Status bar', 'status_3_offset_alt'),
+        'status_1_color_alt': process_color(f.get('Status bar', 'status_1_color_alt')),  # Status bar alternative text color (BGR), line 1
+        'status_2_color_alt': process_color(f.get('Status bar', 'status_2_color_alt')),  # Status bar alternative text color (BGR), line 2
+        'status_3_color_alt': process_color(f.get('Status bar', 'status_3_color_alt')),  # Status bar alternative text color (BGR), line 3
+        'line_spacing_1_alt': f.getint('Status bar', 'line_spacing_1_alt'),  # Status bar alternative text spacing from previous line, line 1
+        'line_spacing_2_alt': f.getint('Status bar', 'line_spacing_2_alt'),  # Status bar alternative text spacing from previous line, line 2
+        'line_spacing_3_alt': f.getint('Status bar', 'line_spacing_3_alt'),  # Status bar alternative text spacing from previous line, line 3
+        'status_1_offset_alt': f.getint('Status bar', 'status_1_offset_alt'),  # Status bar alternative text spacing from left border, line 1
+        'status_2_offset_alt': f.getint('Status bar', 'status_2_offset_alt'),  # Status bar alternative text spacing from left border, line 2
+        'status_3_offset_alt': f.getint('Status bar', 'status_3_offset_alt'),  # Status bar alternative text spacing from left border, line 3
 
-        'status_bar_background': process_color(f.get('Status bar', 'status_bar_background')),
-        'overlay_left_top_border': process_color(f.get('Status bar', 'overlay_left_top_border')),
-        'overlay_right_bottom_border': process_color(f.get('Status bar', 'overlay_right_bottom_border')),
+        'status_bar_background': process_color(f.get('Status bar', 'status_bar_background')),  # Status bar background color (BGR)
+        'overlay_left_top_border': process_color(f.get('Status bar', 'overlay_left_top_border')),  # Status bar left and top borders color (BGR)
+        'overlay_right_bottom_border': process_color(f.get('Status bar', 'overlay_right_bottom_border')),  # Status bar right and bottom borders color (BGR)
     }
 
     return system_data, floor_data, mat_data, overlay_data, status_bar_data

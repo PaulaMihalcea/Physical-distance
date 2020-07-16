@@ -8,6 +8,7 @@ from get_points import get_dim
 
 def warp(img_src, floor_data, mat_data, mode, show=False):
 
+    # Floor mode
     if mode:
         # Get destination points
         if floor_data['floor_dst'] is None:
@@ -22,8 +23,10 @@ def warp(img_src, floor_data, mat_data, mode, show=False):
 
         img_dst = cv2.warpPerspective(img_src, h, (dst_dim[0], dst_dim[1]))  # Warp source image based on homography
 
+    # Mat mode
     elif not mode:
 
+        # Get mat data
         mat_width_cm = mat_data['mat_width']
         mat_height_cm = mat_data['mat_height']
 
@@ -43,6 +46,7 @@ def warp(img_src, floor_data, mat_data, mode, show=False):
         src_width = img_src.shape[1]
         src_height = img_src.shape[0]
 
+        # Homography translation
         x_translation = src_width * 10
         y_translation = src_height * 10
 
@@ -52,6 +56,7 @@ def warp(img_src, floor_data, mat_data, mode, show=False):
 
         th = np.dot(t, h)
 
+        # Warp source image based on translated homography
         dst_width = int(th[0][2]) * 10
         dst_height = int(th[1][2]) * 10
 
